@@ -2,8 +2,11 @@ package com.stylo.backend.error;
 
 import com.stylo.backend.auth.CredencialesInvalidasException;
 import com.stylo.backend.auth.EmailYaRegistradoException;
+import com.stylo.backend.clienta.ClientaNoEncontradaException;
+import com.stylo.backend.clienta.TelefonoRepetidoException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -42,6 +45,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problema = problema(HttpStatus.BAD_REQUEST, "Datos inválidos",
                 "El cuerpo de la solicitud no es un JSON válido");
         return handleExceptionInternal(ex, problema, headers, status, request);
+    }
+
+    // Por ejemplo, un {id} en la URL que no es un UUID
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
+            HttpStatusCode status, WebRequest request) {
+        ProblemDetail problema = problema(HttpStatus.BAD_REQUEST, "Datos inválidos",
+                "El valor de '" + ex.getPropertyName() + "' no es válido");
+        return handleExceptionInternal(ex, problema, headers, status, request);
+    }
+
+    @ExceptionHandler(ClientaNoEncontradaException.class)
+    ProblemDetail clientaNoEncontrada(ClientaNoEncontradaException ex) {
+        return problema(HttpStatus.NOT_FOUND, "No encontrada", ex.getMessage());
+    }
+
+    @ExceptionHandler(TelefonoRepetidoException.class)
+    ProblemDetail telefonoRepetido(TelefonoRepetidoException ex) {
+        return problema(HttpStatus.CONFLICT, "Teléfono repetido", ex.getMessage());
     }
 
     @ExceptionHandler(CredencialesInvalidasException.class)

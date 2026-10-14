@@ -21,4 +21,9 @@ public record RegisterRequest(
 
         @Size(max = 20, message = "El teléfono no puede superar 20 caracteres")
         String telefono) {
+
+    // Se recorta antes de validar, para que " correo@x.com " pase @Email
+    public RegisterRequest {
+        email = email != null ? email.trim() : null;
+    }
 }

@@ -17,6 +17,7 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 - Base de datos: docker compose up -d
   - PostgreSQL de Docker usa el puerto 5433 porque el 5432 lo ocupa el PostgreSQL local de Windows.
 - Backend: `cd backend && ./mvnw spring-boot:run` (en Windows: `cd backend; .\mvnw.cmd spring-boot:run`)
+  - El backend lee el `.env` de la raíz (`spring.config.import=optional:file:../.env[.properties]`), por eso hay que arrancarlo desde `backend/`. Si no encuentra el `.env`, usa los valores por defecto de desarrollo.
 - Tests backend: `cd backend && ./mvnw test`
 
 ## Reglas del proyecto
@@ -36,3 +37,9 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 ## Sprint actual: Sprint 1
 
 Registro e inicio de sesión con JWT, y CRUD de clientas filtrado por salón. Fuera de alcance por ahora: servicios, pagos, WhatsApp y cobros con Wompi.
+
+- Backend: terminado.
+  - `POST /api/auth/register` y `POST /api/auth/login` (públicos, devuelven `token` y `expiraEn`).
+  - `GET /api/me`.
+  - `GET/POST /api/clientas`, `GET/PUT/DELETE /api/clientas/{id}` (con token; el salón sale del token).
+- Frontend: pendiente (React + Vite + TypeScript en `frontend/`, corre en `http://localhost:5173`, el único origen permitido por CORS).

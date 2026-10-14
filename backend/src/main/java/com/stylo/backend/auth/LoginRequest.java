@@ -8,4 +8,8 @@ public record LoginRequest(
 
         @NotBlank(message = "La contraseña es obligatoria")
         String password) {
+
+    public LoginRequest {
+        email = email != null ? email.trim() : null;
+    }
 }

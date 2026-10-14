@@ -11,7 +11,8 @@ import org.springframework.data.repository.Repository;
  */
 public interface ClientaRepository extends Repository<Clienta, UUID> {
 
-    Clienta save(Clienta clienta);
+    // saveAndFlush: así @UpdateTimestamp y el UNIQUE (salon_id, telefono) se aplican dentro del servicio
+    Clienta saveAndFlush(Clienta clienta);
 
     void delete(Clienta clienta);
 
