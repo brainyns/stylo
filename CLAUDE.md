@@ -4,7 +4,7 @@ Micro app para peluquerías: la peluquera registra sus clientas, la fórmula de 
 
 ## Estructura
 
-- `backend/`: Spring Boot 3, Java 21, Maven. Paquete base `com.stylo.backend`.
+- `backend/`: Spring Boot 4.1.1, Java 21, Maven. Paquete base `com.stylo.backend`.
 - `frontend/`: React + Vite + TypeScript (aún no creado).
 - `docs/`: planificación y decisiones.
 
@@ -14,6 +14,8 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 
 ## Comandos
 
+- Base de datos: docker compose up -d
+  - PostgreSQL de Docker usa el puerto 5433 porque el 5432 lo ocupa el PostgreSQL local de Windows.
 - Backend: `cd backend && ./mvnw spring-boot:run` (en Windows: `cd backend; .\mvnw.cmd spring-boot:run`)
 - Tests backend: `cd backend && ./mvnw test`
 

@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16
+    container_name: stylo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # 5433 en el host porque el 5432 lo ocupa el PostgreSQL local de Windows
+    ports:
+      - "5433:5432"
+    volumes:
+      - stylo-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  stylo-db-data:
