@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-marca-50: #ecf7f6;
+  --color-marca-100: #cfecea;
+  --color-marca-200: #a0d8d4;
+  --color-marca-500: #14918b;
+  --color-marca-600: #0e6e6a;
+  --color-marca-700: #0b5754;
+  --color-marca-800: #094543;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-stone-50 text-stone-900 antialiased;
+  }
+}

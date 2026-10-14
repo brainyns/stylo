@@ -5,7 +5,7 @@ Micro app para peluquerías: la peluquera registra sus clientas, la fórmula de 
 ## Estructura
 
 - `backend/`: Spring Boot 4.1.1, Java 21, Maven. Paquete base `com.stylo.backend`.
-- `frontend/`: React + Vite + TypeScript (aún no creado).
+- `frontend/`: React + Vite + TypeScript, Tailwind CSS y React Router. Cliente de API en `src/api/`, pantallas en `src/pages/`.
 - `docs/`: planificación y decisiones.
 
 ## Stack backend
@@ -19,6 +19,8 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 - Backend: `cd backend && ./mvnw spring-boot:run` (en Windows: `cd backend; .\mvnw.cmd spring-boot:run`)
   - El backend lee el `.env` de la raíz (`spring.config.import=optional:file:../.env[.properties]`), por eso hay que arrancarlo desde `backend/`. Si no encuentra el `.env`, usa los valores por defecto de desarrollo.
 - Tests backend: `cd backend && ./mvnw test`
+- Frontend: cd frontend && npm run dev
+  - Corre en `http://localhost:5173`, el único origen permitido por CORS. La URL del backend sale de `VITE_API_URL` (ver `frontend/.env.example`), por defecto `http://localhost:8080`.
 
 ## Reglas del proyecto
 
@@ -34,12 +36,14 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 - Commits cortos en español, en imperativo: "Agrega CRUD de clientas".
 - No agregar líneas de coautoría de Claude en los commits (sin "Co-Authored-By: Claude" ni "Generated with Claude Code").
 
-## Sprint actual: Sprint 1
+## Sprint actual: Sprint 1 (terminado)
 
-Registro e inicio de sesión con JWT, y CRUD de clientas filtrado por salón. Fuera de alcance por ahora: servicios, pagos, WhatsApp y cobros con Wompi.
+Registro e inicio de sesión con JWT, y CRUD de clientas filtrado por salón. Fuera de alcance por ahora: cálculo de retoques, servicios, pagos, WhatsApp y cobros con Wompi (Sprint 2).
 
 - Backend: terminado.
   - `POST /api/auth/register` y `POST /api/auth/login` (públicos, devuelven `token` y `expiraEn`).
   - `GET /api/me`.
   - `GET/POST /api/clientas`, `GET/PUT/DELETE /api/clientas/{id}` (con token; el salón sale del token).
-- Frontend: pendiente (React + Vite + TypeScript en `frontend/`, corre en `http://localhost:5173`, el único origen permitido por CORS).
+- Frontend: terminado.
+  - `/registro`, `/login`, `/clientas` (lista con buscador), `/clientas/nueva` y `/clientas/{id}` (editar y eliminar).
+  - El token se guarda en `localStorage` (TODO: revisarlo antes de producción). Si el backend responde 401 con token, se cierra la sesión y se manda al login.
