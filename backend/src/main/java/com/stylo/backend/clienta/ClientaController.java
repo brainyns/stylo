@@ -3,7 +3,6 @@ package com.stylo.backend.clienta;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -22,10 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/clientas")
-@RequiredArgsConstructor
 public class ClientaController {
 
     private final ClientaService clientaService;
+
+    public ClientaController(ClientaService clientaService) {
+        this.clientaService = clientaService;
+    }
 
     @GetMapping
     public List<ClientaResponse> listar(@AuthenticationPrincipal Jwt jwt) {

@@ -3,7 +3,6 @@ package com.stylo.backend.clienta;
 import com.stylo.backend.salon.SalonRepository;
 import java.util.List;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,13 +11,17 @@ import org.springframework.transaction.annotation.Transactional;
  * Todas las operaciones reciben el salonId del token y nunca tocan clientas de otro salón.
  */
 @Service
-@RequiredArgsConstructor
 public class ClientaService {
 
     private static final String RESTRICCION_TELEFONO_UNICO = "uk_clienta_salon_telefono";
 
     private final ClientaRepository clientaRepository;
     private final SalonRepository salonRepository;
+
+    public ClientaService(ClientaRepository clientaRepository, SalonRepository salonRepository) {
+        this.clientaRepository = clientaRepository;
+        this.salonRepository = salonRepository;
+    }
 
     @Transactional(readOnly = true)
     public List<ClientaResponse> listar(UUID salonId) {
