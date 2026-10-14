@@ -18,6 +18,8 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
   - PostgreSQL de Docker usa el puerto 5433 porque el 5432 lo ocupa el PostgreSQL local de Windows.
 - Backend: `cd backend && ./mvnw spring-boot:run` (en Windows: `cd backend; .\mvnw.cmd spring-boot:run`)
   - El backend lee el `.env` de la raíz (`spring.config.import=optional:file:../.env[.properties]`), por eso hay que arrancarlo desde `backend/`. Si no encuentra el `.env`, usa los valores por defecto de desarrollo.
+  - Si el backend falla con errores de compilación raros, usar .\mvnw.cmd clean spring-boot:run
+    - Pasa cuando la extensión de Java de VS Code compila en `backend/target/classes` y Maven reutiliza esas clases. `.vscode/settings.json` desactiva esa compilación automática.
 - Tests backend: `cd backend && ./mvnw test`
 - Frontend: cd frontend && npm run dev
   - Corre en `http://localhost:5173`, el único origen permitido por CORS. La URL del backend sale de `VITE_API_URL` (ver `frontend/.env.example`), por defecto `http://localhost:8080`.
