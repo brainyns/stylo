@@ -1,0 +1,36 @@
+# Stylo
+
+Micro app para peluquerías: la peluquera registra sus clientas, la fórmula de color de cada una, cada cuánto retocan, servicios y pagos, y les envía recordatorios por WhatsApp. Se venderá por suscripción mensual a salones en Colombia.
+
+## Estructura
+
+- `backend/`: Spring Boot 3, Java 21, Maven. Paquete base `com.stylo.backend`.
+- `frontend/`: React + Vite + TypeScript (aún no creado).
+- `docs/`: planificación y decisiones.
+
+## Stack backend
+
+Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Flyway, Lombok.
+
+## Comandos
+
+- Backend: `cd backend && ./mvnw spring-boot:run` (en Windows: `cd backend; .\mvnw.cmd spring-boot:run`)
+- Tests backend: `cd backend && ./mvnw test`
+
+## Reglas del proyecto
+
+- Multi-salón: toda consulta de datos se filtra por el salón del usuario autenticado. Nunca devolver datos de otro salón.
+- El esquema de base de datos se cambia solo con migraciones de Flyway en `backend/src/main/resources/db/migration` (`V1__...sql`, `V2__...sql`). No usar `ddl-auto=update`.
+- El saldo de una clienta se calcula (servicios menos pagos), no se guarda a mano.
+- Secretos (contraseña de BD, clave JWT) en variables de entorno, nunca en el código. Documentarlas en `.env.example`.
+- Conceptos del negocio en español (`Clienta`, `Servicio`, `Pago`); términos técnicos en inglés (`Controller`, `Repository`, `Service`).
+- Textos visibles al usuario en español de Colombia; montos en COP.
+
+## Git
+
+- Commits cortos en español, en imperativo: "Agrega CRUD de clientas".
+- No agregar líneas de coautoría de Claude en los commits (sin "Co-Authored-By: Claude" ni "Generated with Claude Code").
+
+## Sprint actual: Sprint 1
+
+Registro e inicio de sesión con JWT, y CRUD de clientas filtrado por salón. Fuera de alcance por ahora: servicios, pagos, WhatsApp y cobros con Wompi.
