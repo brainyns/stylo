@@ -1,12 +1,14 @@
 package com.stylo.backend.auth;
 
+import com.stylo.backend.salon.TipoNegocio;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record RegisterRequest(
-        @NotBlank(message = "El nombre del salón es obligatorio")
-        @Size(max = 120, message = "El nombre del salón no puede superar 120 caracteres")
+        @NotBlank(message = "El nombre del negocio es obligatorio")
+        @Size(max = 120, message = "El nombre del negocio no puede superar 120 caracteres")
         String nombre,
 
         @NotBlank(message = "El correo es obligatorio")
@@ -20,7 +22,10 @@ public record RegisterRequest(
         String password,
 
         @Size(max = 20, message = "El teléfono no puede superar 20 caracteres")
-        String telefono) {
+        String telefono,
+
+        @NotNull(message = "Elige el tipo de negocio")
+        TipoNegocio tipo) {
 
     // Se recorta antes de validar, para que " correo@x.com " pase @Email
     public RegisterRequest {

@@ -1,8 +1,8 @@
-package com.stylo.backend.clienta;
+package com.stylo.backend.cliente;
 
 public class TelefonoRepetidoException extends RuntimeException {
 
     public TelefonoRepetidoException() {
-        super("Ya tienes una clienta con ese número");
+        super("Ya tienes un cliente con ese número");
     }
 }

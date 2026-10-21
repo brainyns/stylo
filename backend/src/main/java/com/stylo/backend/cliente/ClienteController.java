@@ -1,4 +1,4 @@
-package com.stylo.backend.clienta;
+package com.stylo.backend.cliente;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,41 +20,41 @@ import org.springframework.web.bind.annotation.RestController;
  * El salonId sale siempre del token (subject), nunca del body ni de la URL.
  */
 @RestController
-@RequestMapping("/api/clientas")
-public class ClientaController {
+@RequestMapping("/api/clientes")
+public class ClienteController {
 
-    private final ClientaService clientaService;
+    private final ClienteService clienteService;
 
-    public ClientaController(ClientaService clientaService) {
-        this.clientaService = clientaService;
+    public ClienteController(ClienteService clienteService) {
+        this.clienteService = clienteService;
     }
 
     @GetMapping
-    public List<ClientaResponse> listar(@AuthenticationPrincipal Jwt jwt) {
-        return clientaService.listar(salonId(jwt));
+    public List<ClienteResponse> listar(@AuthenticationPrincipal Jwt jwt) {
+        return clienteService.listar(salonId(jwt));
     }
 
     @GetMapping("/{id}")
-    public ClientaResponse obtener(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
-        return clientaService.obtener(salonId(jwt), id);
+    public ClienteResponse obtener(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
+        return clienteService.obtener(salonId(jwt), id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ClientaResponse crear(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody ClientaRequest request) {
-        return clientaService.crear(salonId(jwt), request);
+    public ClienteResponse crear(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody ClienteRequest request) {
+        return clienteService.crear(salonId(jwt), request);
     }
 
     @PutMapping("/{id}")
-    public ClientaResponse actualizar(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
-            @Valid @RequestBody ClientaRequest request) {
-        return clientaService.actualizar(salonId(jwt), id, request);
+    public ClienteResponse actualizar(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
+            @Valid @RequestBody ClienteRequest request) {
+        return clienteService.actualizar(salonId(jwt), id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
-        clientaService.eliminar(salonId(jwt), id);
+        clienteService.eliminar(salonId(jwt), id);
     }
 
     private static UUID salonId(Jwt jwt) {

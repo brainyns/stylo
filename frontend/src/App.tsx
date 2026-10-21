@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { RutaProtegida, SoloSinSesion } from './components/RutaProtegida'
-import ClientaForm from './pages/ClientaForm'
-import Clientas from './pages/Clientas'
+import ClienteForm from './pages/ClienteForm'
+import Clientes from './pages/Clientes'
 import Login from './pages/Login'
 import Registro from './pages/Registro'
 
@@ -13,11 +13,11 @@ export default function App() {
         <Route path="/registro" element={<Registro />} />
       </Route>
       <Route element={<RutaProtegida />}>
-        <Route path="/clientas" element={<Clientas />} />
-        <Route path="/clientas/nueva" element={<ClientaForm />} />
-        <Route path="/clientas/:id" element={<ClientaForm />} />
+        <Route path="/clientes" element={<Clientes />} />
+        <Route path="/clientes/nuevo" element={<ClienteForm />} />
+        <Route path="/clientes/:id" element={<ClienteForm />} />
       </Route>
-      <Route path="*" element={<Navigate to="/clientas" replace />} />
+      <Route path="*" element={<Navigate to="/clientes" replace />} />
     </Routes>
   )
 }

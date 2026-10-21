@@ -49,6 +49,7 @@ public class AuthService {
         salon.setEmail(email);
         salon.setPasswordHash(passwordEncoder.encode(request.password()));
         salon.setTelefono(StringUtils.hasText(request.telefono()) ? request.telefono().trim() : null);
+        salon.setTipo(request.tipo());
 
         try {
             salon = salonRepository.saveAndFlush(salon);

@@ -11,7 +11,8 @@ export const TONOS = [
   'Fantasía',
 ] as const
 
-export const FRECUENCIAS_SEMANAS = [3, 4, 5, 6, 8, 10] as const
+// Desde 2 semanas para cortes de barbería hasta 10 para retoques de color
+export const FRECUENCIAS_SEMANAS = [2, 3, 4, 5, 6, 8, 10] as const
 
 export const FRECUENCIA_POR_DEFECTO = 5
 
@@ -28,7 +29,7 @@ const COLOR_TONO: Record<string, string> = {
   Fantasía: 'conic-gradient(#d946ef, #6366f1, #06b6d4, #22c55e, #eab308, #d946ef)',
 }
 
-/** Fondo CSS para el círculo del tono, o null si la clienta no tiene un tono de la lista. */
+/** Fondo CSS para el círculo del tono, o null si el cliente no tiene un tono de la lista. */
 export function colorDeTono(tono: string | null | undefined): string | null {
   return tono ? (COLOR_TONO[tono] ?? null) : null
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
-import { actualizarClienta, crearClienta, eliminarClienta, obtenerClienta, type ClientaRequest } from '../api/clientas'
+import { actualizarCliente, crearCliente, eliminarCliente, obtenerCliente, type ClienteRequest } from '../api/clientes'
 import { AvisoError, Boton, Campo, CirculoTono, PantallaCargando, claseInput } from '../components/ui'
 import { FRECUENCIAS_SEMANAS, FRECUENCIA_POR_DEFECTO, TONOS, formatearTelefono } from '../lib/tonos'
 
@@ -23,7 +23,7 @@ const VACIO: Formulario = {
   notas: '',
 }
 
-export default function ClientaForm() {
+export default function ClienteForm() {
   const { id } = useParams()
   const editando = id !== undefined
   const navigate = useNavigate()
@@ -40,7 +40,7 @@ export default function ClientaForm() {
   useEffect(() => {
     if (!id) return
     let activo = true
-    obtenerClienta(id)
+    obtenerCliente(id)
       .then((c) => {
         if (!activo) return
         setDatos({
@@ -75,7 +75,7 @@ export default function ClientaForm() {
     setEnviando(true)
     setError(null)
     setErrores({})
-    const cuerpo: ClientaRequest = {
+    const cuerpo: ClienteRequest = {
       nombre: datos.nombre.trim(),
       telefono: datos.telefono.trim(),
       tono: datos.tono || null,
@@ -84,9 +84,9 @@ export default function ClientaForm() {
       notas: datos.notas.trim() || null,
     }
     try {
-      if (id) await actualizarClienta(id, cuerpo)
-      else await crearClienta(cuerpo)
-      navigate('/clientas', { state: { aviso: editando ? 'Cambios guardados.' : `${cuerpo.nombre} quedó registrada.` } })
+      if (id) await actualizarCliente(id, cuerpo)
+      else await crearCliente(cuerpo)
+      navigate('/clientes', { state: { aviso: editando ? 'Cambios guardados.' : `Se guardó a ${cuerpo.nombre}.` } })
     } catch (err) {
       mostrarError(err)
       setEnviando(false)
@@ -98,8 +98,8 @@ export default function ClientaForm() {
     setEliminando(true)
     setError(null)
     try {
-      await eliminarClienta(id)
-      navigate('/clientas', { replace: true, state: { aviso: `${datos.nombre} fue eliminada.` } })
+      await eliminarCliente(id)
+      navigate('/clientes', { replace: true, state: { aviso: `Se eliminó a ${datos.nombre}.` } })
     } catch (err) {
       mostrarError(err)
       setEliminando(false)
@@ -109,7 +109,7 @@ export default function ClientaForm() {
 
   if (cargando) return <PantallaCargando />
 
-  // Si la clienta ya tiene un valor que no está en las listas, se conserva como opción
+  // Si el cliente ya tiene un valor que no está en las listas, se conserva como opción
   const tonos: string[] = datos.tono && !(TONOS as readonly string[]).includes(datos.tono) ? [...TONOS, datos.tono] : [...TONOS]
   const frecuencias: number[] = (FRECUENCIAS_SEMANAS as readonly number[]).includes(datos.frecuenciaSemanas)
     ? [...FRECUENCIAS_SEMANAS]
@@ -126,13 +126,13 @@ export default function ClientaForm() {
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center px-2 py-2">
           <Link
-            to="/clientas"
+            to="/clientes"
             className="flex min-h-11 items-center gap-1 rounded-xl px-3 font-semibold text-marca-700 hover:bg-stone-100 active:bg-stone-200"
           >
             <span aria-hidden="true" className="text-2xl leading-none">
               ‹
             </span>
-            Clientas
+            Clientes
           </Link>
         </div>
       </header>
@@ -140,13 +140,13 @@ export default function ClientaForm() {
       <main className="mx-auto max-w-2xl px-4 pt-5">
         <div className="mb-6 flex items-center gap-4">
           <CirculoTono tono={datos.tono || null} className="size-14" />
-          <h1 className="text-2xl font-bold tracking-tight">{editando ? 'Editar clienta' : 'Nueva clienta'}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{editando ? 'Editar cliente' : 'Nuevo cliente'}</h1>
         </div>
 
         {errorCarga ? (
           <div className="space-y-3">
             <AvisoError mensaje={errorCarga} />
-            <Link to="/clientas" className="block py-3 text-center font-semibold text-marca-700">
+            <Link to="/clientes" className="block py-3 text-center font-semibold text-marca-700">
               Volver a la lista
             </Link>
           </div>
@@ -182,7 +182,7 @@ export default function ClientaForm() {
                 />
               </Campo>
 
-              <Campo id="tono" etiqueta="Tono" opcional error={errores.tono}>
+              <Campo id="tono" etiqueta="Tono de color" opcional error={errores.tono}>
                 <select id="tono" value={datos.tono} onChange={cambiar('tono')} className={claseInput} {...propsCampo('tono')}>
                   <option value="">Sin tono</option>
                   {tonos.map((t) => (
@@ -205,7 +205,7 @@ export default function ClientaForm() {
                 />
               </Campo>
 
-              <Campo id="frecuenciaSemanas" etiqueta="Retoca cada" error={errores.frecuenciaSemanas}>
+              <Campo id="frecuenciaSemanas" etiqueta="Vuelve cada" error={errores.frecuenciaSemanas}>
                 <select
                   id="frecuenciaSemanas"
                   value={datos.frecuenciaSemanas}
@@ -215,7 +215,7 @@ export default function ClientaForm() {
                 >
                   {frecuencias.map((n) => (
                     <option key={n} value={n}>
-                      {n} semanas
+                      {n} {n === 1 ? 'semana' : 'semanas'}
                     </option>
                   ))}
                 </select>
@@ -225,6 +225,7 @@ export default function ClientaForm() {
                 <textarea
                   id="notas"
                   rows={4}
+                  placeholder="Ej. tipo de corte, estilo de barba, alergias o preferencias."
                   value={datos.notas}
                   onChange={cambiar('notas')}
                   className={`${claseInput} py-3`}
@@ -234,10 +235,10 @@ export default function ClientaForm() {
 
               <div className="space-y-3 pt-2">
                 <Boton type="submit" cargando={enviando} disabled={eliminando}>
-                  {editando ? 'Guardar cambios' : 'Guardar clienta'}
+                  {editando ? 'Guardar cambios' : 'Guardar cliente'}
                 </Boton>
                 <Link
-                  to="/clientas"
+                  to="/clientes"
                   className="flex min-h-12 w-full items-center justify-center rounded-xl text-base font-semibold text-stone-600 hover:bg-stone-100"
                 >
                   Cancelar
@@ -264,7 +265,7 @@ export default function ClientaForm() {
                   </div>
                 ) : (
                   <Boton variante="peligroSuave" onClick={() => setConfirmandoEliminar(true)} disabled={enviando}>
-                    Eliminar clienta
+                    Eliminar cliente
                   </Boton>
                 )}
               </section>

@@ -1,4 +1,4 @@
-package com.stylo.backend.clienta;
+package com.stylo.backend.cliente;
 
 import com.stylo.backend.salon.Salon;
 import jakarta.persistence.Column;
@@ -18,10 +18,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "clienta")
+@Table(name = "cliente")
 @Getter
 @Setter
-public class Clienta {
+public class Cliente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

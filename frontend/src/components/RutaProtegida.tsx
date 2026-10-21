@@ -5,7 +5,7 @@ export function RutaProtegida() {
   return obtenerToken() ? <Outlet /> : <Navigate to="/login" replace />
 }
 
-/** Para /login y /registro: si ya hay sesión, va directo a las clientas. */
+/** Para /login y /registro: si ya hay sesión, va directo a los clientes. */
 export function SoloSinSesion() {
-  return obtenerToken() ? <Navigate to="/clientas" replace /> : <Outlet />
+  return obtenerToken() ? <Navigate to="/clientes" replace /> : <Outlet />
 }

@@ -1,4 +1,4 @@
-package com.stylo.backend.clienta;
+package com.stylo.backend.cliente;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,19 +6,19 @@ import java.util.UUID;
 import org.springframework.data.repository.Repository;
 
 /**
- * Todas las consultas de clientas reciben el salonId: nunca se buscan clientas sin filtrar por salón.
+ * Todas las consultas de clientes reciben el salonId: nunca se buscan clientes sin filtrar por salón.
  * Hereda de Repository (no de JpaRepository) para no exponer findAll, findById ni deleteById sin filtro.
  */
-public interface ClientaRepository extends Repository<Clienta, UUID> {
+public interface ClienteRepository extends Repository<Cliente, UUID> {
 
     // saveAndFlush: así @UpdateTimestamp y el UNIQUE (salon_id, telefono) se aplican dentro del servicio
-    Clienta saveAndFlush(Clienta clienta);
+    Cliente saveAndFlush(Cliente cliente);
 
-    void delete(Clienta clienta);
+    void delete(Cliente cliente);
 
-    List<Clienta> findAllBySalonIdOrderByNombreAsc(UUID salonId);
+    List<Cliente> findAllBySalonIdOrderByNombreAsc(UUID salonId);
 
-    Optional<Clienta> findByIdAndSalonId(UUID id, UUID salonId);
+    Optional<Cliente> findByIdAndSalonId(UUID id, UUID salonId);
 
     boolean existsBySalonIdAndTelefono(UUID salonId, String telefono);
 }

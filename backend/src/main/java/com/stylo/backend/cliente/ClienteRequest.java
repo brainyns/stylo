@@ -1,4 +1,4 @@
-package com.stylo.backend.clienta;
+package com.stylo.backend.cliente;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record ClientaRequest(
+public record ClienteRequest(
         @NotBlank(message = "El nombre es obligatorio")
         @Size(max = 120, message = "El nombre no puede superar 120 caracteres")
         String nombre,
@@ -31,7 +31,7 @@ public record ClientaRequest(
     private static final int FRECUENCIA_POR_DEFECTO = 5;
 
     // Normaliza antes de validar: el teléfono queda en 10 dígitos y los textos opcionales vacíos en null
-    public ClientaRequest {
+    public ClienteRequest {
         nombre = nombre != null ? nombre.trim() : null;
         telefono = normalizarTelefono(telefono);
         tono = textoOpcional(tono);

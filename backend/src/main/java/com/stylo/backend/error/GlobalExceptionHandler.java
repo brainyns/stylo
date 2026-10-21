@@ -2,8 +2,8 @@ package com.stylo.backend.error;
 
 import com.stylo.backend.auth.CredencialesInvalidasException;
 import com.stylo.backend.auth.EmailYaRegistradoException;
-import com.stylo.backend.clienta.ClientaNoEncontradaException;
-import com.stylo.backend.clienta.TelefonoRepetidoException;
+import com.stylo.backend.cliente.ClienteNoEncontradoException;
+import com.stylo.backend.cliente.TelefonoRepetidoException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.beans.TypeMismatchException;
@@ -56,9 +56,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problema, headers, status, request);
     }
 
-    @ExceptionHandler(ClientaNoEncontradaException.class)
-    ProblemDetail clientaNoEncontrada(ClientaNoEncontradaException ex) {
-        return problema(HttpStatus.NOT_FOUND, "No encontrada", ex.getMessage());
+    @ExceptionHandler(ClienteNoEncontradoException.class)
+    ProblemDetail clienteNoEncontrado(ClienteNoEncontradoException ex) {
+        return problema(HttpStatus.NOT_FOUND, "No encontrado", ex.getMessage());
     }
 
     @ExceptionHandler(TelefonoRepetidoException.class)

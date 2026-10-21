@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { registrar } from '../api/auth'
+import { NOMBRE_TIPO_NEGOCIO, registrar, type TipoNegocio } from '../api/auth'
 import { ApiError } from '../api/client'
 import { PantallaAuth } from '../components/PantallaAuth'
 import { AvisoError, Boton, Campo, claseInput } from '../components/ui'
@@ -8,12 +8,12 @@ import { guardarSesion } from '../lib/sesion'
 
 export default function Registro() {
   const navigate = useNavigate()
-  const [datos, setDatos] = useState({ nombre: '', email: '', password: '', telefono: '' })
+  const [datos, setDatos] = useState({ nombre: '', email: '', password: '', telefono: '', tipo: 'PELUQUERIA' as TipoNegocio })
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [errores, setErrores] = useState<Record<string, string>>({})
 
-  const cambiar = (campo: keyof typeof datos) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const cambiar = (campo: Exclude<keyof typeof datos, 'tipo'>) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setDatos((d) => ({ ...d, [campo]: e.target.value }))
 
   async function enviar(e: FormEvent) {
@@ -24,7 +24,7 @@ export default function Registro() {
     try {
       const telefono = datos.telefono.trim()
       guardarSesion(await registrar({ ...datos, nombre: datos.nombre.trim(), telefono: telefono || undefined }))
-      navigate('/clientas', { replace: true })
+      navigate('/clientes', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado.')
       if (err instanceof ApiError) setErrores(err.errores)
@@ -33,10 +33,32 @@ export default function Registro() {
   }
 
   return (
-    <PantallaAuth titulo="Registra tu salón" subtitulo="Crea tu cuenta y empieza a guardar las fórmulas de tus clientas.">
+    <PantallaAuth titulo="Registra tu negocio" subtitulo="Para peluquerías y barberías: guarda el historial de cada cliente y recuérdale cuándo volver.">
       <form onSubmit={enviar} className="space-y-5" noValidate>
         <AvisoError mensaje={error} />
-        <Campo id="nombre" etiqueta="Nombre del salón" error={errores.nombre}>
+        <fieldset className="space-y-1.5">
+          <legend className="mb-1.5 block text-sm font-medium text-stone-700">Tipo de negocio</legend>
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(NOMBRE_TIPO_NEGOCIO) as TipoNegocio[]).map((tipo) => (
+              <label
+                key={tipo}
+                className="flex min-h-12 cursor-pointer items-center justify-center rounded-xl border border-stone-300 bg-white px-2 py-2 text-center text-sm font-semibold leading-tight text-stone-700 hover:bg-stone-100 has-checked:border-marca-600 has-checked:bg-marca-50 has-checked:text-marca-800 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-marca-600"
+              >
+                <input
+                  type="radio"
+                  name="tipo"
+                  value={tipo}
+                  checked={datos.tipo === tipo}
+                  onChange={() => setDatos((d) => ({ ...d, tipo }))}
+                  className="sr-only"
+                />
+                {tipo === 'MIXTO' ? 'Ambas' : NOMBRE_TIPO_NEGOCIO[tipo]}
+              </label>
+            ))}
+          </div>
+          {errores.tipo && <p className="text-sm text-red-700">{errores.tipo}</p>}
+        </fieldset>
+        <Campo id="nombre" etiqueta="Nombre del negocio" error={errores.nombre}>
           <input
             id="nombre"
             autoComplete="organization"

@@ -2,6 +2,8 @@ package com.stylo.backend.salon;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,6 +35,10 @@ public class Salon {
 
     @Column(name = "telefono", length = 20)
     private String telefono;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false, length = 20)
+    private TipoNegocio tipo = TipoNegocio.PELUQUERIA;
 
     @CreationTimestamp
     @Column(name = "creado_en", nullable = false, updatable = false)

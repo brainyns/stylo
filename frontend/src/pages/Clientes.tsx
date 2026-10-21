@@ -1,28 +1,28 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { obtenerSalon, type Salon } from '../api/auth'
-import { listarClientas, type Clienta } from '../api/clientas'
+import { NOMBRE_TIPO_NEGOCIO, obtenerSalon, type Salon } from '../api/auth'
+import { listarClientes, type Cliente } from '../api/clientes'
 import { AvisoError, Boton, CirculoTono, Spinner, claseInput } from '../components/ui'
 import { borrarSesion } from '../lib/sesion'
 import { formatearTelefono, normalizar } from '../lib/tonos'
 
-export default function Clientas() {
+export default function Clientes() {
   const navigate = useNavigate()
   const location = useLocation()
   const aviso = (location.state as { aviso?: string } | null)?.aviso
   const [salon, setSalon] = useState<Salon | null>(null)
-  const [clientas, setClientas] = useState<Clienta[] | null>(null)
+  const [clientes, setClientes] = useState<Cliente[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
   const [intento, setIntento] = useState(0)
 
   useEffect(() => {
     let activo = true
-    Promise.all([obtenerSalon(), listarClientas()])
+    Promise.all([obtenerSalon(), listarClientes()])
       .then(([s, c]) => {
         if (!activo) return
         setSalon(s)
-        setClientas([...c].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')))
+        setClientes([...c].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')))
       })
       .catch((err: Error) => activo && setError(err.message))
     return () => {
@@ -32,8 +32,8 @@ export default function Clientas() {
 
   const filtradas = useMemo(() => {
     const texto = normalizar(busqueda)
-    return (clientas ?? []).filter((c) => normalizar(c.nombre).includes(texto))
-  }, [clientas, busqueda])
+    return (clientes ?? []).filter((c) => normalizar(c.nombre).includes(texto))
+  }, [clientes, busqueda])
 
   function reintentar() {
     setError(null)
@@ -50,7 +50,9 @@ export default function Clientas() {
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-wide text-marca-600">Stylo</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-marca-600">
+              Stylo{salon && ` · ${NOMBRE_TIPO_NEGOCIO[salon.tipo]}`}
+            </p>
             <p className="truncate text-lg font-bold">{salon?.nombre ?? ' '}</p>
           </div>
           <button
@@ -65,8 +67,8 @@ export default function Clientas() {
 
       <main className="mx-auto max-w-2xl px-4 pt-5">
         <div className="mb-4 flex items-baseline justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Clientas</h1>
-          {clientas && clientas.length > 0 && <span className="text-sm text-stone-500">{clientas.length} en total</span>}
+          <h1 className="text-2xl font-bold tracking-tight">Clientes</h1>
+          {clientes && clientes.length > 0 && <span className="text-sm text-stone-500">{clientes.length} en total</span>}
         </div>
 
         {aviso && (
@@ -82,15 +84,15 @@ export default function Clientas() {
               Reintentar
             </Boton>
           </div>
-        ) : clientas === null ? (
+        ) : clientes === null ? (
           <div className="flex justify-center py-16 text-marca-600">
             <Spinner className="size-8" />
-            <span className="sr-only">Cargando clientas…</span>
+            <span className="sr-only">Cargando clientes…</span>
           </div>
-        ) : clientas.length === 0 ? (
+        ) : clientes.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-12 text-center">
-            <p className="text-lg font-semibold">Aún no tienes clientas.</p>
-            <p className="mt-1 text-stone-600">Agrega la primera.</p>
+            <p className="text-lg font-semibold">Aún no tienes clientes.</p>
+            <p className="mt-1 text-stone-600">Agrega tu primer cliente.</p>
           </div>
         ) : (
           <>
@@ -110,7 +112,7 @@ export default function Clientas() {
               <input
                 type="search"
                 placeholder="Buscar por nombre"
-                aria-label="Buscar clienta por nombre"
+                aria-label="Buscar cliente por nombre"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 className={`${claseInput} pl-12`}
@@ -118,25 +120,26 @@ export default function Clientas() {
             </div>
 
             {filtradas.length === 0 ? (
-              <p className="py-10 text-center text-stone-600">No hay clientas que coincidan con «{busqueda.trim()}».</p>
+              <p className="py-10 text-center text-stone-600">No hay clientes que coincidan con «{busqueda.trim()}».</p>
             ) : (
               <ul className="space-y-2">
                 {filtradas.map((c) => (
                   <li key={c.id}>
                     <Link
-                      to={`/clientas/${c.id}`}
+                      to={`/clientes/${c.id}`}
                       className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm transition-colors hover:border-marca-200 active:bg-stone-50"
                     >
                       <CirculoTono tono={c.tono} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold">{c.nombre}</p>
                         <p className="truncate text-sm text-stone-500">
-                          {c.tono ?? 'Sin tono'} · {formatearTelefono(c.telefono)}
+                          {c.tono && `${c.tono} · `}
+                          {formatearTelefono(c.telefono)}
                         </p>
                         {c.formula && <p className="mt-0.5 truncate text-sm text-stone-700">{c.formula}</p>}
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="text-xs text-stone-500">Retoca cada</p>
+                        <p className="text-xs text-stone-500">Vuelve cada</p>
                         <p className="text-sm font-semibold text-marca-700">{c.frecuenciaSemanas} sem</p>
                       </div>
                     </Link>
@@ -151,13 +154,13 @@ export default function Clientas() {
       <div className="fixed inset-x-0 bottom-0 border-t border-stone-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
         <div className="mx-auto max-w-2xl">
           <Link
-            to="/clientas/nueva"
+            to="/clientes/nuevo"
             className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-marca-600 px-5 text-base font-semibold text-white shadow-sm hover:bg-marca-700 active:bg-marca-800"
           >
             <span className="text-xl leading-none" aria-hidden="true">
               +
             </span>
-            Agregar clienta
+            Agregar cliente
           </Link>
         </div>
       </div>

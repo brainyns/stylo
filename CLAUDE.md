@@ -1,6 +1,8 @@
 # Stylo
 
-Micro app para peluquerías: la peluquera registra sus clientas, la fórmula de color de cada una, cada cuánto retocan, servicios y pagos, y les envía recordatorios por WhatsApp. Se venderá por suscripción mensual a salones en Colombia.
+Micro app unificada para peluquerías y barberías: el negocio registra a sus clientes, la fórmula de color o las notas del corte de cada uno, cada cuánto vuelven, servicios y pagos, y les envía recordatorios por WhatsApp. Se venderá por suscripción mensual a peluquerías y barberías en Colombia.
+
+Al registrarse, el negocio elige su tipo (`PELUQUERIA`, `BARBERIA` o `MIXTO`); internamente todos son un `Salon`.
 
 ## Estructura
 
@@ -26,11 +28,11 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 
 ## Reglas del proyecto
 
-- Multi-salón: toda consulta de datos se filtra por el salón del usuario autenticado. Nunca devolver datos de otro salón.
+- Multi-negocio: toda consulta de datos se filtra por el salón del usuario autenticado. Nunca devolver datos de otro salón.
 - El esquema de base de datos se cambia solo con migraciones de Flyway en `backend/src/main/resources/db/migration` (`V1__...sql`, `V2__...sql`). No usar `ddl-auto=update`.
-- El saldo de una clienta se calcula (servicios menos pagos), no se guarda a mano.
+- El saldo de un cliente se calcula (servicios menos pagos), no se guarda a mano.
 - Secretos (contraseña de BD, clave JWT) en variables de entorno, nunca en el código. Documentarlas en `.env.example`.
-- Conceptos del negocio en español (`Clienta`, `Servicio`, `Pago`); términos técnicos en inglés (`Controller`, `Repository`, `Service`).
+- Conceptos del negocio en español (`Cliente`, `Salon`, `Servicio`, `Pago`). Textos neutros que sirvan a peluquerías y barberías ("cliente", "negocio"), no "clienta" ni "salón"; términos técnicos en inglés (`Controller`, `Repository`, `Service`).
 - Textos visibles al usuario en español de Colombia; montos en COP.
 
 ## Git
@@ -40,12 +42,12 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 
 ## Sprint actual: Sprint 1 (terminado)
 
-Registro e inicio de sesión con JWT, y CRUD de clientas filtrado por salón. Fuera de alcance por ahora: cálculo de retoques, servicios, pagos, WhatsApp y cobros con Wompi (Sprint 2).
+Registro e inicio de sesión con JWT, y CRUD de clientes filtrado por salón. Fuera de alcance por ahora: cálculo de retoques, servicios, pagos, WhatsApp y cobros con Wompi (Sprint 2).
 
 - Backend: terminado.
-  - `POST /api/auth/register` y `POST /api/auth/login` (públicos, devuelven `token` y `expiraEn`).
-  - `GET /api/me`.
-  - `GET/POST /api/clientas`, `GET/PUT/DELETE /api/clientas/{id}` (con token; el salón sale del token).
+  - `POST /api/auth/register` (con `tipo` del negocio) y `POST /api/auth/login` (públicos, devuelven `token` y `expiraEn`).
+  - `GET /api/me` (incluye el `tipo` del negocio).
+  - `GET/POST /api/clientes`, `GET/PUT/DELETE /api/clientes/{id}` (con token; el salón sale del token).
 - Frontend: terminado.
-  - `/registro`, `/login`, `/clientas` (lista con buscador), `/clientas/nueva` y `/clientas/{id}` (editar y eliminar).
+  - `/registro`, `/login`, `/clientes` (lista con buscador), `/clientes/nuevo` y `/clientes/{id}` (editar y eliminar).
   - El token se guarda en `localStorage` (TODO: revisarlo antes de producción). Si el backend responde 401 con token, se cierra la sesión y se manda al login.

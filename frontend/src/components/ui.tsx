@@ -77,7 +77,7 @@ export function Campo({ id, etiqueta, error, ayuda, opcional, children }: CampoP
   )
 }
 
-/** Círculo con el color del tono de la clienta. */
+/** Círculo con el color del tono del cliente. */
 export function CirculoTono({ tono, className = 'size-11' }: { tono: string | null; className?: string }) {
   const color = colorDeTono(tono)
   if (!color) {

@@ -5,10 +5,19 @@ export interface TokenResponse {
   expiraEn: string
 }
 
+export type TipoNegocio = 'PELUQUERIA' | 'BARBERIA' | 'MIXTO'
+
+export const NOMBRE_TIPO_NEGOCIO: Record<TipoNegocio, string> = {
+  PELUQUERIA: 'Peluquería',
+  BARBERIA: 'Barbería',
+  MIXTO: 'Peluquería y barbería',
+}
+
 export interface Salon {
   id: string
   nombre: string
   email: string
+  tipo: TipoNegocio
 }
 
 export interface RegistroRequest {
@@ -16,6 +25,7 @@ export interface RegistroRequest {
   email: string
   password: string
   telefono?: string
+  tipo: TipoNegocio
 }
 
 export const registrar = (datos: RegistroRequest) =>
