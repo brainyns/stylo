@@ -2,6 +2,8 @@ package com.stylo.backend.error;
 
 import com.stylo.backend.auth.CredencialesInvalidasException;
 import com.stylo.backend.auth.EmailYaRegistradoException;
+import com.stylo.backend.cita.CitaNoEncontradaException;
+import com.stylo.backend.cita.RangoFechasInvalidoException;
 import com.stylo.backend.cliente.ClienteNoEncontradoException;
 import com.stylo.backend.cliente.TelefonoRepetidoException;
 import java.util.LinkedHashMap;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -59,6 +62,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ClienteNoEncontradoException.class)
     ProblemDetail clienteNoEncontrado(ClienteNoEncontradoException ex) {
         return problema(HttpStatus.NOT_FOUND, "No encontrado", ex.getMessage());
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ProblemDetail problema = problema(HttpStatus.BAD_REQUEST, "Datos inválidos",
+                "Falta el parámetro '" + ex.getParameterName() + "'");
+        return handleExceptionInternal(ex, problema, headers, status, request);
+    }
+
+    @ExceptionHandler(CitaNoEncontradaException.class)
+    ProblemDetail citaNoEncontrada(CitaNoEncontradaException ex) {
+        return problema(HttpStatus.NOT_FOUND, "No encontrada", ex.getMessage());
+    }
+
+    @ExceptionHandler(RangoFechasInvalidoException.class)
+    ProblemDetail rangoFechasInvalido(RangoFechasInvalidoException ex) {
+        return problema(HttpStatus.BAD_REQUEST, "Datos inválidos", ex.getMessage());
     }
 
     @ExceptionHandler(TelefonoRepetidoException.class)

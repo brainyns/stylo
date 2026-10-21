@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
-import { NOMBRE_TIPO_NEGOCIO, obtenerSalon, type Salon } from '../api/auth'
+import { Link, useLocation } from 'react-router'
 import { listarClientes, type Cliente } from '../api/clientes'
+import { EnlaceFlotante } from '../components/Layout'
 import { AvisoError, Boton, CirculoTono, Spinner, claseInput } from '../components/ui'
-import { borrarSesion } from '../lib/sesion'
+import { describirCuandoVuelve, diasDesdeHoy, formatearFechaCorta, formatearHora } from '../lib/formato'
 import { formatearTelefono, normalizar } from '../lib/tonos'
 
 export default function Clientes() {
-  const navigate = useNavigate()
   const location = useLocation()
   const aviso = (location.state as { aviso?: string } | null)?.aviso
-  const [salon, setSalon] = useState<Salon | null>(null)
   const [clientes, setClientes] = useState<Cliente[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
@@ -18,12 +16,8 @@ export default function Clientes() {
 
   useEffect(() => {
     let activo = true
-    Promise.all([obtenerSalon(), listarClientes()])
-      .then(([s, c]) => {
-        if (!activo) return
-        setSalon(s)
-        setClientes([...c].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')))
-      })
+    listarClientes()
+      .then((c) => activo && setClientes([...c].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))))
       .catch((err: Error) => activo && setError(err.message))
     return () => {
       activo = false
@@ -40,31 +34,8 @@ export default function Clientes() {
     setIntento((n) => n + 1)
   }
 
-  function cerrarSesion() {
-    borrarSesion()
-    navigate('/login', { replace: true })
-  }
-
   return (
-    <div className="min-h-dvh pb-28">
-      <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-          <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-wide text-marca-600">
-              Stylo{salon && ` · ${NOMBRE_TIPO_NEGOCIO[salon.tipo]}`}
-            </p>
-            <p className="truncate text-lg font-bold">{salon?.nombre ?? ' '}</p>
-          </div>
-          <button
-            type="button"
-            onClick={cerrarSesion}
-            className="min-h-11 shrink-0 rounded-xl px-3 text-sm font-semibold text-stone-600 hover:bg-stone-100 active:bg-stone-200"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </header>
-
+    <>
       <main className="mx-auto max-w-2xl px-4 pt-5">
         <div className="mb-4 flex items-baseline justify-between">
           <h1 className="text-2xl font-bold tracking-tight">Clientes</h1>
@@ -138,10 +109,7 @@ export default function Clientes() {
                         </p>
                         {c.formula && <p className="mt-0.5 truncate text-sm text-stone-700">{c.formula}</p>}
                       </div>
-                      <div className="shrink-0 text-right">
-                        <p className="text-xs text-stone-500">Vuelve cada</p>
-                        <p className="text-sm font-semibold text-marca-700">{c.frecuenciaSemanas} sem</p>
-                      </div>
+                      <EstadoVisita cliente={c} />
                     </Link>
                   </li>
                 ))}
@@ -151,19 +119,30 @@ export default function Clientes() {
         )}
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-stone-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
-        <div className="mx-auto max-w-2xl">
-          <Link
-            to="/clientes/nuevo"
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-marca-600 px-5 text-base font-semibold text-white shadow-sm hover:bg-marca-700 active:bg-marca-800"
-          >
-            <span className="text-xl leading-none" aria-hidden="true">
-              +
-            </span>
-            Agregar cliente
-          </Link>
-        </div>
-      </div>
+      <EnlaceFlotante to="/clientes/nuevo">Agregar cliente</EnlaceFlotante>
+    </>
+  )
+}
+
+/** A la derecha de cada cliente: su próxima cita, o cuándo le toca volver, o cada cuánto vuelve. */
+function EstadoVisita({ cliente }: { cliente: Cliente }) {
+  let etiqueta = 'Vuelve cada'
+  let valor = `${cliente.frecuenciaSemanas} sem`
+  let color = 'text-marca-700'
+  if (cliente.proximaCita) {
+    etiqueta = `Cita · ${formatearFechaCorta(cliente.proximaCita)}`
+    valor = formatearHora(cliente.proximaCita)
+    color = 'text-sky-700'
+  } else if (cliente.leTocaVolver) {
+    const atrasado = diasDesdeHoy(cliente.leTocaVolver) < 0
+    etiqueta = atrasado ? 'Atrasado' : 'Próxima visita'
+    valor = atrasado ? describirCuandoVuelve(cliente.leTocaVolver).replace('Atrasado ', '') : formatearFechaCorta(cliente.leTocaVolver)
+    color = atrasado ? 'text-amber-700' : 'text-marca-700'
+  }
+  return (
+    <div className="shrink-0 text-right">
+      <p className="text-xs text-stone-500 first-letter:uppercase">{etiqueta}</p>
+      <p className={`text-sm font-semibold ${color}`}>{valor}</p>
     </div>
   )
 }

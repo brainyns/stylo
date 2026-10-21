@@ -40,14 +40,25 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 - Commits cortos en español, en imperativo: "Agrega CRUD de clientas".
 - No agregar líneas de coautoría de Claude en los commits (sin "Co-Authored-By: Claude" ni "Generated with Claude Code").
 
-## Sprint actual: Sprint 1 (terminado)
+## Sprint 1 (terminado)
 
-Registro e inicio de sesión con JWT, y CRUD de clientes filtrado por salón. Fuera de alcance por ahora: cálculo de retoques, servicios, pagos, WhatsApp y cobros con Wompi (Sprint 2).
+Registro e inicio de sesión con JWT, y CRUD de clientes filtrado por salón.
 
-- Backend: terminado.
-  - `POST /api/auth/register` (con `tipo` del negocio) y `POST /api/auth/login` (públicos, devuelven `token` y `expiraEn`).
-  - `GET /api/me` (incluye el `tipo` del negocio).
-  - `GET/POST /api/clientes`, `GET/PUT/DELETE /api/clientes/{id}` (con token; el salón sale del token).
-- Frontend: terminado.
-  - `/registro`, `/login`, `/clientes` (lista con buscador), `/clientes/nuevo` y `/clientes/{id}` (editar y eliminar).
-  - El token se guarda en `localStorage` (TODO: revisarlo antes de producción). Si el backend responde 401 con token, se cierra la sesión y se manda al login.
+- `POST /api/auth/register` (con `tipo` del negocio) y `POST /api/auth/login` (públicos, devuelven `token` y `expiraEn`).
+- `GET /api/me` (incluye el `tipo` del negocio).
+- `GET/POST /api/clientes`, `GET/PUT/DELETE /api/clientes/{id}` (con token; el salón sale del token).
+- Frontend: `/registro`, `/login`, `/clientes` (lista con buscador), `/clientes/nuevo` y `/clientes/{id}` (editar y eliminar).
+- El token se guarda en `localStorage` (TODO: revisarlo antes de producción). Si el backend responde 401 con token, se cierra la sesión y se manda al login.
+
+## Sprint actual: Sprint 2 (en curso)
+
+Agenda de citas y cálculo de cuándo le toca volver a cada cliente.
+
+- Hecho:
+  - `GET /api/citas?desde=&hasta=` (máx. 62 días), `GET /api/citas?clienteId=`, `GET/POST /api/citas`, `PUT/DELETE /api/citas/{id}`, `PATCH /api/citas/{id}/estado`.
+  - Estados: `PROGRAMADA`, `COMPLETADA` (cuenta como visita), `NO_ASISTIO`, `CANCELADA`. Precio en COP sin decimales.
+  - `ClienteResponse` trae `ultimaVisita`, `proximaCita` y `leTocaVolver` (última visita + frecuencia), calculados desde las citas.
+  - La FK `(cliente_id, salon_id)` de `cita` garantiza en la base que el cliente es del mismo salón.
+  - Frontend con pestañas: `/agenda` (semana, día, marcar atendida), `/clientes`, `/por-volver` (atrasados y los de esta semana sin cita). Citas en `/agenda/nueva` y `/agenda/{id}`.
+  - WhatsApp con enlace `wa.me` y mensaje ya escrito (recordatorio de cita e invitación a volver); no usa la API de WhatsApp.
+- Pendiente: pagos y saldo, envío automático por WhatsApp y cobros con Wompi.

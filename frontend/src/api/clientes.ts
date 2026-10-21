@@ -8,6 +8,12 @@ export interface Cliente {
   formula: string | null
   frecuenciaSemanas: number
   notas: string | null
+  /** Última cita atendida. */
+  ultimaVisita: string | null
+  /** Próxima cita programada desde ahora. */
+  proximaCita: string | null
+  /** Última visita + frecuencia; null si aún no ha venido. */
+  leTocaVolver: string | null
   creadoEn: string
   actualizadoEn: string
 }

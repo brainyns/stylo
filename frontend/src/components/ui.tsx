@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { NOMBRE_ESTADO, type EstadoCita } from '../api/citas'
 import { colorDeTono } from '../lib/tonos'
 
 const VARIANTES = {
@@ -103,5 +104,39 @@ export function PantallaCargando() {
       <Spinner className="size-8" />
       <span className="sr-only">Cargando…</span>
     </div>
+  )
+}
+
+/** Botón verde de WhatsApp que abre el chat con el mensaje ya escrito. */
+export function EnlaceWhatsApp({ href, children, className = '' }: { href: string; children: ReactNode; className?: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-[#25D366]/10 px-3.5 text-sm font-semibold text-[#128C4B] ring-1 ring-inset ring-[#25D366]/40 hover:bg-[#25D366]/20 ${className}`}
+    >
+      <svg className="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z" />
+      </svg>
+      {children}
+    </a>
+  )
+}
+
+const COLOR_ESTADO: Record<EstadoCita, string> = {
+  PROGRAMADA: 'bg-sky-50 text-sky-800 ring-sky-200',
+  COMPLETADA: 'bg-marca-50 text-marca-800 ring-marca-200',
+  NO_ASISTIO: 'bg-amber-50 text-amber-900 ring-amber-200',
+  CANCELADA: 'bg-stone-100 text-stone-600 ring-stone-200',
+}
+
+export function InsigniaEstado({ estado, className = '' }: { estado: EstadoCita; className?: string }) {
+  return (
+    <span
+      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${COLOR_ESTADO[estado]} ${className}`}
+    >
+      {NOMBRE_ESTADO[estado]}
+    </span>
   )
 }

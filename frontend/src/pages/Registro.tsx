@@ -30,7 +30,7 @@ export default function Registro() {
     try {
       const telefono = datos.telefono.trim()
       guardarSesion(await registrar({ ...datos, nombre: datos.nombre.trim(), telefono: telefono || undefined }))
-      navigate('/clientes', { replace: true })
+      navigate('/agenda', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado.')
       if (err instanceof ApiError) setErrores(err.errores)

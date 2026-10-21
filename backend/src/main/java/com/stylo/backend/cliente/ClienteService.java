@@ -1,8 +1,14 @@
 package com.stylo.backend.cliente;
 
+import com.stylo.backend.cita.CitaRepository;
+import com.stylo.backend.cita.ResumenVisitas;
 import com.stylo.backend.salon.SalonRepository;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,22 +23,28 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final SalonRepository salonRepository;
+    private final CitaRepository citaRepository;
 
-    public ClienteService(ClienteRepository clienteRepository, SalonRepository salonRepository) {
+    public ClienteService(ClienteRepository clienteRepository, SalonRepository salonRepository,
+            CitaRepository citaRepository) {
         this.clienteRepository = clienteRepository;
         this.salonRepository = salonRepository;
+        this.citaRepository = citaRepository;
     }
 
     @Transactional(readOnly = true)
     public List<ClienteResponse> listar(UUID salonId) {
+        // Una sola consulta agregada para las visitas de todos los clientes, no una por cliente
+        Map<UUID, ResumenVisitas> resumenes = citaRepository.resumenPorCliente(salonId, Instant.now()).stream()
+                .collect(Collectors.toMap(ResumenVisitas::clienteId, Function.identity()));
         return clienteRepository.findAllBySalonIdOrderByNombreAsc(salonId).stream()
-                .map(ClienteResponse::from)
+                .map(cliente -> ClienteResponse.from(cliente, resumenes.get(cliente.getId())))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public ClienteResponse obtener(UUID salonId, UUID id) {
-        return ClienteResponse.from(buscar(salonId, id));
+        return responder(salonId, buscar(salonId, id));
     }
 
     @Transactional
@@ -43,7 +55,8 @@ public class ClienteService {
         Cliente cliente = new Cliente();
         cliente.setSalon(salonRepository.getReferenceById(salonId));
         aplicar(cliente, request);
-        return ClienteResponse.from(guardar(cliente));
+        // Recién creado: todavía no tiene citas
+        return ClienteResponse.from(guardar(cliente), null);
     }
 
     @Transactional
@@ -54,12 +67,17 @@ public class ClienteService {
             throw new TelefonoRepetidoException();
         }
         aplicar(cliente, request);
-        return ClienteResponse.from(guardar(cliente));
+        return responder(salonId, guardar(cliente));
     }
 
     @Transactional
     public void eliminar(UUID salonId, UUID id) {
         clienteRepository.delete(buscar(salonId, id));
+    }
+
+    private ClienteResponse responder(UUID salonId, Cliente cliente) {
+        ResumenVisitas resumen = citaRepository.resumenDeCliente(salonId, cliente.getId(), Instant.now()).orElse(null);
+        return ClienteResponse.from(cliente, resumen);
     }
 
     private Cliente buscar(UUID salonId, UUID id) {

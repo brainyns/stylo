@@ -22,7 +22,7 @@ export default function Login() {
     setErrores({})
     try {
       guardarSesion(await iniciarSesion(email, password))
-      navigate('/clientes', { replace: true })
+      navigate('/agenda', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado.')
       if (err instanceof ApiError) setErrores(err.errores)
