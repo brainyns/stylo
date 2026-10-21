@@ -31,7 +31,7 @@ export default function Login() {
   }
 
   return (
-    <PantallaAuth titulo="Inicia sesión" subtitulo="Entra para ver los clientes de tu negocio.">
+    <PantallaAuth titulo="Qué bueno verte de nuevo" subtitulo="Entra y sigue llenando tu agenda.">
       {params.get('sesion') === 'expirada' && !error && (
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Tu sesión venció. Inicia sesión de nuevo.

@@ -6,6 +6,12 @@ import { PantallaAuth } from '../components/PantallaAuth'
 import { AvisoError, Boton, Campo, claseInput } from '../components/ui'
 import { guardarSesion } from '../lib/sesion'
 
+const BENEFICIOS = [
+  'La ficha de cada cliente en tu celular, sin cuadernos.',
+  'Sabes cada cuánto debe volver cada cliente.',
+  'Recordatorios por WhatsApp para que no se te pierda nadie (muy pronto).',
+]
+
 export default function Registro() {
   const navigate = useNavigate()
   const [datos, setDatos] = useState({ nombre: '', email: '', password: '', telefono: '', tipo: 'PELUQUERIA' as TipoNegocio })
@@ -33,7 +39,23 @@ export default function Registro() {
   }
 
   return (
-    <PantallaAuth titulo="Registra tu negocio" subtitulo="Para peluquerías y barberías: guarda el historial de cada cliente y recuérdale cuándo volver.">
+    <PantallaAuth
+      titulo="Que tus clientes siempre vuelvan"
+      subtitulo="Stylo recuerda por ti la fórmula, el corte y cuándo le toca volver a cada cliente. Para peluquerías y barberías."
+    >
+      <ul className="mb-8 space-y-2.5">
+        {BENEFICIOS.map((beneficio) => (
+          <li key={beneficio} className="flex items-start gap-3 text-stone-700">
+            <span
+              className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-marca-100 text-xs font-bold text-marca-700"
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+            {beneficio}
+          </li>
+        ))}
+      </ul>
       <form onSubmit={enviar} className="space-y-5" noValidate>
         <AvisoError mensaje={error} />
         <fieldset className="space-y-1.5">
