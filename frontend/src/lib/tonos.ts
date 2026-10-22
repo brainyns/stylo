@@ -1,3 +1,5 @@
+import type { TipoNegocio } from '../api/auth'
+
 export const TONOS = [
   'Negro',
   'Castaño oscuro',
@@ -15,6 +17,11 @@ export const TONOS = [
 export const FRECUENCIAS_SEMANAS = [2, 3, 4, 5, 6, 8, 10] as const
 
 export const FRECUENCIA_POR_DEFECTO = 5
+
+/** Un corte de barber se repite antes que un retoque de color. */
+export function frecuenciaPorDefecto(tipo: TipoNegocio | undefined): number {
+  return tipo === 'BARBERIA' ? 3 : FRECUENCIA_POR_DEFECTO
+}
 
 const COLOR_TONO: Record<string, string> = {
   Negro: '#1f1b1a',
@@ -39,6 +46,13 @@ export function formatearTelefono(telefono: string): string {
   return /^\d{10}$/.test(telefono)
     ? `${telefono.slice(0, 3)} ${telefono.slice(3, 6)} ${telefono.slice(6)}`
     : telefono
+}
+
+/** Agrupa el celular mientras se escribe ("3001234" → "300 123 4"); si trae prefijo u otros signos, lo deja igual. */
+export function agruparTelefono(texto: string): string {
+  const digitos = texto.replace(/\D/g, '')
+  if (digitos.length > 10 || /[^\d\s]/.test(texto)) return texto
+  return [digitos.slice(0, 3), digitos.slice(3, 6), digitos.slice(6)].filter(Boolean).join(' ')
 }
 
 /** Minúsculas y sin tildes, para buscar "maria" y encontrar "María". */

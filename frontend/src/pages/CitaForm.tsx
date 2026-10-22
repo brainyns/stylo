@@ -12,6 +12,7 @@ import {
   type EstadoCita,
 } from '../api/citas'
 import { listarClientes, type Cliente } from '../api/clientes'
+import { EncabezadoVolver } from '../components/Layout'
 import { AvisoError, Boton, Campo, PantallaCargando, claseInput } from '../components/ui'
 import { claveDia, claveHora, desdeClave, formatearPrecio } from '../lib/formato'
 import { DURACIONES_MINUTOS, DURACION_POR_DEFECTO, SERVICIOS_SUGERIDOS, formatearDuracion } from '../lib/servicios'
@@ -155,19 +156,7 @@ export default function CitaForm() {
 
   return (
     <div className="min-h-dvh pb-10">
-      <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl items-center px-2 py-2">
-          <Link
-            to={volverA}
-            className="flex min-h-11 items-center gap-1 rounded-xl px-3 font-semibold text-marca-700 hover:bg-stone-100 active:bg-stone-200"
-          >
-            <span aria-hidden="true" className="text-2xl leading-none">
-              ‹
-            </span>
-            Agenda
-          </Link>
-        </div>
-      </header>
+      <EncabezadoVolver to={volverA}>Agenda</EncabezadoVolver>
 
       <main className="mx-auto max-w-2xl px-4 pt-5">
         <h1 className="mb-6 text-2xl font-bold tracking-tight">{editando ? 'Editar cita' : 'Nueva cita'}</h1>

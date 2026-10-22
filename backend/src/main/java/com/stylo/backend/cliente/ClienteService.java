@@ -88,6 +88,7 @@ public class ClienteService {
     private static void aplicar(Cliente cliente, ClienteRequest request) {
         cliente.setNombre(request.nombre());
         cliente.setTelefono(request.telefono());
+        cliente.setEmail(request.email());
         cliente.setTono(request.tono());
         cliente.setFormula(request.formula());
         cliente.setFrecuenciaSemanas(request.frecuenciaSemanas());

@@ -105,6 +105,25 @@ export function CirculoTono({ tono, className = 'size-11' }: { tono: string | nu
   )
 }
 
+/** Círculo del tono si el cliente tiene uno; si no, sus iniciales (en barber casi nunca hay tono). */
+export function AvatarCliente({ nombre, tono, className = 'size-11 text-base' }: { nombre: string; tono: string | null; className?: string }) {
+  if (colorDeTono(tono)) return <CirculoTono tono={tono} className={className} />
+  const iniciales = nombre
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((palabra) => palabra[0]?.toUpperCase() ?? '')
+    .join('')
+  return (
+    <span
+      className={`${className} flex shrink-0 items-center justify-center rounded-full bg-stone-900 font-bold text-marca-300`}
+      aria-hidden="true"
+    >
+      {iniciales || '·'}
+    </span>
+  )
+}
+
 export function PantallaCargando() {
   return (
     <div className="flex min-h-dvh items-center justify-center text-marca-600">

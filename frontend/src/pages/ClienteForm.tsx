@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
-import { obtenerSalon } from '../api/auth'
+import { obtenerSalon, type Salon } from '../api/auth'
 import { listarCitasDeCliente, type Cita } from '../api/citas'
 import {
   actualizarCliente,
@@ -11,11 +11,12 @@ import {
   type Cliente,
   type ClienteRequest,
 } from '../api/clientes'
+import { EncabezadoVolver } from '../components/Layout'
 import {
+  AvatarCliente,
   AvisoError,
   Boton,
   Campo,
-  CirculoTono,
   EnlaceWhatsApp,
   InsigniaEstado,
   PantallaCargando,
@@ -23,59 +24,79 @@ import {
 } from '../components/ui'
 import { describirCuandoVuelve, diasDesdeHoy, formatearFechaCorta, formatearHora, formatearPrecio } from '../lib/formato'
 import { enlaceWhatsApp, mensajeLeTocaVolver } from '../lib/whatsapp'
-import { FRECUENCIAS_SEMANAS, FRECUENCIA_POR_DEFECTO, TONOS, formatearTelefono } from '../lib/tonos'
+import { FRECUENCIAS_SEMANAS, TONOS, agruparTelefono, formatearTelefono, frecuenciaPorDefecto } from '../lib/tonos'
 
 interface Formulario {
   nombre: string
   telefono: string
+  email: string
+  notas: string
+  // "Más datos": cada cuánto vuelve y, fuera de barber, el color
+  frecuenciaSemanas: number | null
   tono: string
   formula: string
-  frecuenciaSemanas: number
-  notas: string
 }
 
-const VACIO: Formulario = {
-  nombre: '',
-  telefono: '',
-  tono: '',
-  formula: '',
-  frecuenciaSemanas: FRECUENCIA_POR_DEFECTO,
-  notas: '',
+const VACIO: Formulario = { nombre: '', telefono: '', email: '', notas: '', frecuenciaSemanas: null, tono: '', formula: '' }
+
+const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** Lo mismo que revisa el backend, para avisar al instante sin esperar la respuesta. */
+function validar(datos: Formulario): Record<string, string> {
+  const errores: Record<string, string> = {}
+  if (!datos.nombre.trim()) errores.nombre = 'Escribe el nombre.'
+  const digitos = datos.telefono.replace(/\D/g, '').replace(/^57(?=\d{10}$)/, '')
+  if (!digitos) errores.telefono = 'Escribe el WhatsApp.'
+  else if (!/^3\d{9}$/.test(digitos)) errores.telefono = 'Debe ser un celular de 10 dígitos que empiece por 3, ej. 300 123 4567.'
+  if (datos.email.trim() && !EMAIL_VALIDO.test(datos.email.trim()))
+    errores.email = 'Revisa el correo, parece incompleto (ej. nombre@correo.com).'
+  return errores
 }
 
 export default function ClienteForm() {
   const { id } = useParams()
   const editando = id !== undefined
   const navigate = useNavigate()
+  const refNombre = useRef<HTMLInputElement>(null)
 
   const [datos, setDatos] = useState<Formulario>(VACIO)
+  const [salon, setSalon] = useState<Salon | null>(null)
   const [cliente, setCliente] = useState<Cliente | null>(null)
   const [citas, setCitas] = useState<Cita[]>([])
-  const [negocio, setNegocio] = useState('')
   const [cargando, setCargando] = useState(editando)
   const [errorCarga, setErrorCarga] = useState<string | null>(null)
-  const [enviando, setEnviando] = useState(false)
+  const [enviando, setEnviando] = useState<'volver' | 'otro' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [aviso, setAviso] = useState<string | null>(null)
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false)
   const [eliminando, setEliminando] = useState(false)
 
   useEffect(() => {
-    if (!id) return
     let activo = true
+    if (!id) {
+      // Solo hace falta el tipo de negocio; si falla, el formulario sirve igual
+      obtenerSalon()
+        .then((s) => activo && setSalon(s))
+        .catch(() => {})
+      return () => {
+        activo = false
+      }
+    }
     Promise.all([obtenerCliente(id), listarCitasDeCliente(id), obtenerSalon()])
-      .then(([c, historial, salon]) => {
+      .then(([c, historial, s]) => {
         if (!activo) return
-        setNegocio(salon.nombre)
+        setSalon(s)
         setCliente(c)
         setCitas(historial)
         setDatos({
           nombre: c.nombre,
           telefono: formatearTelefono(c.telefono),
+          email: c.email ?? '',
+          notas: c.notas ?? '',
+          frecuenciaSemanas: c.frecuenciaSemanas,
           tono: c.tono ?? '',
           formula: c.formula ?? '',
-          frecuenciaSemanas: c.frecuenciaSemanas,
-          notas: c.notas ?? '',
         })
       })
       .catch((err: Error) => activo && setErrorCarga(err.message))
@@ -85,37 +106,58 @@ export default function ClienteForm() {
     }
   }, [id])
 
-  const cambiar =
-    (campo: keyof Formulario) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-      setDatos((d) => ({ ...d, [campo]: campo === 'frecuenciaSemanas' ? Number(e.target.value) : e.target.value }))
+  const esBarber = salon?.tipo === 'BARBERIA'
+  const frecuencia = datos.frecuenciaSemanas ?? frecuenciaPorDefecto(salon?.tipo)
 
-  function mostrarError(err: unknown) {
-    setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado.')
-    setErrores(err instanceof ApiError ? err.errores : {})
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+  const cambiar =
+    (campo: 'nombre' | 'email' | 'notas' | 'tono' | 'formula') =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setDatos((d) => ({ ...d, [campo]: e.target.value }))
+
+  function mostrarErrores(campos: Record<string, string>) {
+    setErrores(campos)
+    const primero = ['nombre', 'telefono', 'email'].find((c) => campos[c])
+    if (primero) document.getElementById(primero)?.focus()
   }
 
-  async function guardar(e: FormEvent) {
+  // Lo llaman el submit del formulario y el botón "Guardar y agregar otro"
+  async function guardar(e: Pick<FormEvent, 'preventDefault'>, despues: 'volver' | 'otro' = 'volver') {
     e.preventDefault()
-    setEnviando(true)
     setError(null)
+    setAviso(null)
+    const invalidos = validar(datos)
+    if (Object.keys(invalidos).length > 0) {
+      mostrarErrores(invalidos)
+      return
+    }
     setErrores({})
+    setEnviando(despues)
     const cuerpo: ClienteRequest = {
       nombre: datos.nombre.trim(),
       telefono: datos.telefono.trim(),
+      email: datos.email.trim() || null,
+      // Se envían aunque estén ocultos para no borrar el color que ya tenía guardado
       tono: datos.tono || null,
       formula: datos.formula.trim() || null,
-      frecuenciaSemanas: datos.frecuenciaSemanas,
+      frecuenciaSemanas: frecuencia,
       notas: datos.notas.trim() || null,
     }
     try {
       if (id) await actualizarCliente(id, cuerpo)
       else await crearCliente(cuerpo)
+      if (despues === 'otro') {
+        // Formulario limpio y el cursor en el nombre, listo para el siguiente
+        setDatos(VACIO)
+        setAviso(`Se guardó a ${cuerpo.nombre}. Agrega el siguiente.`)
+        setEnviando(null)
+        refNombre.current?.focus()
+        return
+      }
       navigate('/clientes', { state: { aviso: editando ? 'Cambios guardados.' : `Se guardó a ${cuerpo.nombre}.` } })
     } catch (err) {
-      mostrarError(err)
-      setEnviando(false)
+      setEnviando(null)
+      setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado.')
+      if (err instanceof ApiError) mostrarErrores(err.errores)
     }
   }
 
@@ -127,9 +169,10 @@ export default function ClienteForm() {
       await eliminarCliente(id)
       navigate('/clientes', { replace: true, state: { aviso: `Se eliminó a ${datos.nombre}.` } })
     } catch (err) {
-      mostrarError(err)
+      setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado.')
       setEliminando(false)
       setConfirmandoEliminar(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -137,36 +180,26 @@ export default function ClienteForm() {
 
   // Si el cliente ya tiene un valor que no está en las listas, se conserva como opción
   const tonos: string[] = datos.tono && !(TONOS as readonly string[]).includes(datos.tono) ? [...TONOS, datos.tono] : [...TONOS]
-  const frecuencias: number[] = (FRECUENCIAS_SEMANAS as readonly number[]).includes(datos.frecuenciaSemanas)
+  const frecuencias: number[] = (FRECUENCIAS_SEMANAS as readonly number[]).includes(frecuencia)
     ? [...FRECUENCIAS_SEMANAS]
-    : [...FRECUENCIAS_SEMANAS, datos.frecuenciaSemanas].sort((a, b) => a - b)
+    : [...FRECUENCIAS_SEMANAS, frecuencia].sort((a, b) => a - b)
 
-  // Error del backend junto a cada campo
+  // Error junto a cada campo
   const propsCampo = (campo: string) => ({
     'aria-invalid': !!errores[campo],
     'aria-describedby': errores[campo] ? `${campo}-error` : undefined,
   })
 
+  const ocupado = enviando !== null || eliminando
+
   return (
     <div className="min-h-dvh pb-10">
-      <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl items-center px-2 py-2">
-          <Link
-            to="/clientes"
-            className="flex min-h-11 items-center gap-1 rounded-xl px-3 font-semibold text-marca-700 hover:bg-stone-100 active:bg-stone-200"
-          >
-            <span aria-hidden="true" className="text-2xl leading-none">
-              ‹
-            </span>
-            Clientes
-          </Link>
-        </div>
-      </header>
+      <EncabezadoVolver to="/clientes">Clientes</EncabezadoVolver>
 
-      <main className="mx-auto max-w-2xl px-4 pt-5">
+      <main className="mx-auto max-w-2xl px-4 pt-6">
         <div className="mb-6 flex items-center gap-4">
-          <CirculoTono tono={datos.tono || null} className="size-14" />
-          <h1 className="text-2xl font-bold tracking-tight">{editando ? 'Editar cliente' : 'Nuevo cliente'}</h1>
+          {editando && <AvatarCliente nombre={datos.nombre} tono={datos.tono || null} className="size-14 text-xl" />}
+          <h1 className="text-[1.75rem] leading-tight tracking-tight">{editando ? 'Editar cliente' : 'Nuevo cliente'}</h1>
         </div>
 
         {errorCarga ? (
@@ -180,13 +213,22 @@ export default function ClienteForm() {
           <>
             <form onSubmit={guardar} className="space-y-5" noValidate>
               <AvisoError mensaje={error} />
+              {aviso && (
+                <div role="status" className="rounded-xl border border-marca-200 bg-marca-50 px-4 py-3 text-sm text-marca-800">
+                  {aviso}
+                </div>
+              )}
 
               <Campo id="nombre" etiqueta="Nombre" error={errores.nombre}>
                 <input
+                  ref={refNombre}
                   id="nombre"
                   autoComplete="off"
                   autoCapitalize="words"
+                  autoFocus={!editando}
+                  enterKeyHint="next"
                   required
+                  placeholder="Ej. Andrés Gómez"
                   value={datos.nombre}
                   onChange={cambiar('nombre')}
                   className={claseInput}
@@ -194,64 +236,43 @@ export default function ClienteForm() {
                 />
               </Campo>
 
-              <Campo id="telefono" etiqueta="WhatsApp" ayuda="Celular de 10 dígitos, ej. 300 123 4567." error={errores.telefono}>
+              <Campo id="telefono" etiqueta="WhatsApp" error={errores.telefono}>
                 <input
                   id="telefono"
                   type="tel"
                   inputMode="tel"
                   autoComplete="off"
+                  enterKeyHint={editando ? 'next' : 'done'}
                   required
+                  placeholder="300 123 4567"
                   value={datos.telefono}
-                  onChange={cambiar('telefono')}
+                  onChange={(e) => setDatos((d) => ({ ...d, telefono: agruparTelefono(e.target.value) }))}
                   className={claseInput}
                   {...propsCampo('telefono')}
                 />
               </Campo>
 
-              <Campo id="tono" etiqueta="Tono de color" opcional error={errores.tono}>
-                <select id="tono" value={datos.tono} onChange={cambiar('tono')} className={claseInput} {...propsCampo('tono')}>
-                  <option value="">Sin tono</option>
-                  {tonos.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </Campo>
-
-              <Campo id="formula" etiqueta="Fórmula del color" opcional error={errores.formula}>
+              <Campo id="email" etiqueta="Correo" opcional error={errores.email}>
                 <input
-                  id="formula"
+                  id="email"
+                  type="email"
+                  inputMode="email"
                   autoComplete="off"
-                  placeholder="Ej. 6.1 + 7.0, oxidante 20 vol."
-                  value={datos.formula}
-                  onChange={cambiar('formula')}
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder="nombre@correo.com"
+                  value={datos.email}
+                  onChange={cambiar('email')}
                   className={claseInput}
-                  {...propsCampo('formula')}
+                  {...propsCampo('email')}
                 />
-              </Campo>
-
-              <Campo id="frecuenciaSemanas" etiqueta="Vuelve cada" error={errores.frecuenciaSemanas}>
-                <select
-                  id="frecuenciaSemanas"
-                  value={datos.frecuenciaSemanas}
-                  onChange={cambiar('frecuenciaSemanas')}
-                  className={claseInput}
-                  {...propsCampo('frecuenciaSemanas')}
-                >
-                  {frecuencias.map((n) => (
-                    <option key={n} value={n}>
-                      {n} {n === 1 ? 'semana' : 'semanas'}
-                    </option>
-                  ))}
-                </select>
               </Campo>
 
               <Campo id="notas" etiqueta="Notas" opcional error={errores.notas}>
                 <textarea
                   id="notas"
-                  rows={4}
-                  placeholder="Ej. tipo de corte, estilo de barba, alergias o preferencias."
+                  rows={3}
+                  placeholder={esBarber ? 'Ej. degradado bajo, barba en punta, máquina 2 a los lados.' : 'Ej. tipo de corte, alergias o preferencias.'}
                   value={datos.notas}
                   onChange={cambiar('notas')}
                   className={`${claseInput} py-3`}
@@ -259,10 +280,88 @@ export default function ClienteForm() {
                 />
               </Campo>
 
-              <div className="space-y-3 pt-2">
-                <Boton type="submit" cargando={enviando} disabled={eliminando}>
+              <details
+                className="group rounded-2xl border border-stone-200 bg-white"
+                open={!!errores.frecuenciaSemanas || !!errores.tono || !!errores.formula || undefined}
+              >
+                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 text-sm font-semibold text-stone-700 hover:bg-stone-50 [&::-webkit-details-marker]:hidden">
+                  <span>
+                    Más datos
+                    <span className="ml-2 font-normal text-stone-500">
+                      Vuelve cada {frecuencia} {frecuencia === 1 ? 'semana' : 'semanas'}
+                      {!esBarber && datos.tono && ` · ${datos.tono}`}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="text-stone-400 transition-transform group-open:rotate-180">
+                    ⌄
+                  </span>
+                </summary>
+                <div className="space-y-5 border-t border-stone-100 px-4 pb-4 pt-4">
+                  <Campo
+                    id="frecuenciaSemanas"
+                    etiqueta="Vuelve cada"
+                    ayuda="Con esto Stylo te avisa en «Por volver» cuándo le toca."
+                    error={errores.frecuenciaSemanas}
+                  >
+                    <select
+                      id="frecuenciaSemanas"
+                      value={frecuencia}
+                      onChange={(e) => setDatos((d) => ({ ...d, frecuenciaSemanas: Number(e.target.value) }))}
+                      className={claseInput}
+                      {...propsCampo('frecuenciaSemanas')}
+                    >
+                      {frecuencias.map((n) => (
+                        <option key={n} value={n}>
+                          {n} {n === 1 ? 'semana' : 'semanas'}
+                        </option>
+                      ))}
+                    </select>
+                  </Campo>
+
+                  {/* El color solo aplica fuera de barber; mientras no se sabe el tipo, no se muestra */}
+                  {salon && !esBarber && (
+                    <>
+                      <Campo id="tono" etiqueta="Tono de color" opcional error={errores.tono}>
+                        <select id="tono" value={datos.tono} onChange={cambiar('tono')} className={claseInput} {...propsCampo('tono')}>
+                          <option value="">Sin tono</option>
+                          {tonos.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </Campo>
+                      <Campo id="formula" etiqueta="Fórmula del color" opcional error={errores.formula}>
+                        <input
+                          id="formula"
+                          autoComplete="off"
+                          placeholder="Ej. 6.1 + 7.0, oxidante 20 vol."
+                          value={datos.formula}
+                          onChange={cambiar('formula')}
+                          className={claseInput}
+                          {...propsCampo('formula')}
+                        />
+                      </Campo>
+                    </>
+                  )}
+                </div>
+              </details>
+
+              <div className="space-y-3 pt-1">
+                <Boton type="submit" cargando={enviando === 'volver'} disabled={ocupado}>
                   {editando ? 'Guardar cambios' : 'Guardar cliente'}
                 </Boton>
+                {!editando && (
+                  <Boton
+                    type="button"
+                    variante="secundario"
+                    cargando={enviando === 'otro'}
+                    disabled={ocupado}
+                    onClick={(e) => guardar(e, 'otro')}
+                  >
+                    Guardar y agregar otro
+                  </Boton>
+                )}
                 <Link
                   to="/clientes"
                   className="flex min-h-12 w-full items-center justify-center rounded-xl text-base font-semibold text-stone-600 hover:bg-stone-100"
@@ -272,7 +371,7 @@ export default function ClienteForm() {
               </div>
             </form>
 
-            {cliente && <Visitas cliente={cliente} citas={citas} negocio={negocio} />}
+            {cliente && <Visitas cliente={cliente} citas={citas} negocio={salon?.nombre ?? ''} />}
 
             {editando && (
               <section className="mt-8 border-t border-stone-200 pt-6">
@@ -281,7 +380,7 @@ export default function ClienteForm() {
                     <p id="titulo-eliminar" className="font-semibold text-red-900">
                       ¿Eliminar a {datos.nombre}?
                     </p>
-                    <p className="mt-1 text-sm text-red-800">Se borrarán sus datos, su fórmula y su historial de citas. Esta acción no se puede deshacer.</p>
+                    <p className="mt-1 text-sm text-red-800">Se borrarán sus datos y su historial de citas. Esta acción no se puede deshacer.</p>
                     <div className="mt-4 grid grid-cols-2 gap-3">
                       <Boton variante="secundario" onClick={() => setConfirmandoEliminar(false)} disabled={eliminando} autoFocus>
                         Cancelar
@@ -292,7 +391,7 @@ export default function ClienteForm() {
                     </div>
                   </div>
                 ) : (
-                  <Boton variante="peligroSuave" onClick={() => setConfirmandoEliminar(true)} disabled={enviando}>
+                  <Boton variante="peligroSuave" onClick={() => setConfirmandoEliminar(true)} disabled={ocupado}>
                     Eliminar cliente
                   </Boton>
                 )}

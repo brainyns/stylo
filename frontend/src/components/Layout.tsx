@@ -85,6 +85,25 @@ function Pestana({ to, etiqueta, icono }: { to: string; etiqueta: string; icono:
   )
 }
 
+/** Encabezado carbón de las pantallas de formulario, con el enlace para volver a la sección. */
+export function EncabezadoVolver({ to, children }: { to: string; children: ReactNode }) {
+  return (
+    <header className="sticky top-0 z-10 bg-stone-950 pt-[env(safe-area-inset-top)] text-white">
+      <div className="mx-auto flex max-w-2xl items-center px-2 py-2">
+        <Link
+          to={to}
+          className="flex min-h-11 items-center gap-1 rounded-xl px-3 font-semibold text-marca-300 hover:bg-white/10 active:bg-white/15"
+        >
+          <span aria-hidden="true" className="text-2xl leading-none">
+            ‹
+          </span>
+          {children}
+        </Link>
+      </div>
+    </header>
+  )
+}
+
 /** Botón redondo fijo sobre la barra de pestañas, para la acción principal de la pantalla. */
 export function EnlaceFlotante({ to, children }: { to: string; children: ReactNode }) {
   return (

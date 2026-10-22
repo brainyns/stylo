@@ -1,10 +1,12 @@
 package com.stylo.backend.cliente;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.Locale;
 
 public record ClienteRequest(
         @NotBlank(message = "El nombre es obligatorio")
@@ -15,6 +17,10 @@ public record ClienteRequest(
         @Pattern(regexp = "3\\d{9}",
                 message = "El teléfono debe ser un celular colombiano de 10 dígitos (puede incluir el prefijo 57)")
         String telefono,
+
+        @Email(message = "Revisa el correo, parece incompleto (ej. nombre@correo.com)")
+        @Size(max = 160, message = "El correo no puede superar 160 caracteres")
+        String email,
 
         @Size(max = 40, message = "El tono no puede superar 40 caracteres")
         String tono,
@@ -34,6 +40,7 @@ public record ClienteRequest(
     public ClienteRequest {
         nombre = nombre != null ? nombre.trim() : null;
         telefono = normalizarTelefono(telefono);
+        email = email == null || email.isBlank() ? null : email.trim().toLowerCase(Locale.ROOT);
         tono = textoOpcional(tono);
         formula = textoOpcional(formula);
         notas = textoOpcional(notas);

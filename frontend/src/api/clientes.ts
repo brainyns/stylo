@@ -4,6 +4,7 @@ export interface Cliente {
   id: string
   nombre: string
   telefono: string
+  email: string | null
   tono: string | null
   formula: string | null
   frecuenciaSemanas: number
@@ -21,6 +22,7 @@ export interface Cliente {
 export interface ClienteRequest {
   nombre: string
   telefono: string
+  email: string | null
   tono: string | null
   formula: string | null
   frecuenciaSemanas: number
