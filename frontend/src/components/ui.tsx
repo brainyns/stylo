@@ -124,6 +124,33 @@ export function AvatarCliente({ nombre, tono, className = 'size-11 text-base' }:
   )
 }
 
+/** Atajos de servicio según el tipo de negocio; tocar uno lo escribe en el campo. */
+export function ChipsServicios({
+  sugeridos,
+  valor,
+  onElegir,
+}: {
+  sugeridos: string[]
+  valor: string
+  onElegir: (servicio: string) => void
+}) {
+  return (
+    <div className="flex flex-wrap gap-2 pt-1">
+      {sugeridos.map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => onElegir(s)}
+          aria-pressed={valor === s}
+          className="min-h-9 rounded-full border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:bg-stone-100 aria-pressed:border-marca-600 aria-pressed:bg-marca-50 aria-pressed:text-marca-800"
+        >
+          {s}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function PantallaCargando() {
   return (
     <div className="flex min-h-dvh items-center justify-center text-marca-600">

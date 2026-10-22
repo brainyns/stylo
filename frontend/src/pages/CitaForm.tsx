@@ -13,7 +13,7 @@ import {
 } from '../api/citas'
 import { listarClientes, type Cliente } from '../api/clientes'
 import { EncabezadoVolver } from '../components/Layout'
-import { AvisoError, Boton, Campo, PantallaCargando, claseInput } from '../components/ui'
+import { AvisoError, Boton, Campo, ChipsServicios, PantallaCargando, claseInput } from '../components/ui'
 import { claveDia, claveHora, desdeClave, formatearPrecio } from '../lib/formato'
 import { DURACIONES_MINUTOS, DURACION_POR_DEFECTO, SERVICIOS_SUGERIDOS, formatearDuracion } from '../lib/servicios'
 
@@ -44,7 +44,8 @@ export default function CitaForm() {
   const [datos, setDatos] = useState<Formulario>(() => ({
     clienteId: params.get('clienteId') ?? '',
     fecha: desdeClave(params.get('fecha')) ? params.get('fecha')! : claveDia(new Date()),
-    hora: horaSugerida(),
+    // Al tocar un hueco del calendario llega la hora de ese hueco
+    hora: /^\d{2}:\d{2}$/.test(params.get('hora') ?? '') ? params.get('hora')! : horaSugerida(),
     duracionMinutos: DURACION_POR_DEFECTO,
     servicio: '',
     precio: '',
@@ -159,7 +160,7 @@ export default function CitaForm() {
       <EncabezadoVolver to={volverA}>Agenda</EncabezadoVolver>
 
       <main className="mx-auto max-w-2xl px-4 pt-5">
-        <h1 className="mb-6 text-2xl font-bold tracking-tight">{editando ? 'Editar cita' : 'Nueva cita'}</h1>
+        <h1 className="mb-6 text-[1.75rem] leading-tight tracking-tight">{editando ? 'Editar cita' : 'Nueva cita'}</h1>
 
         {errorCarga ? (
           <div className="space-y-3">
@@ -237,19 +238,11 @@ export default function CitaForm() {
                   className={claseInput}
                   {...propsCampo('servicio')}
                 />
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {SERVICIOS_SUGERIDOS[tipo].map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setDatos((d) => ({ ...d, servicio: s }))}
-                      aria-pressed={datos.servicio === s}
-                      className="min-h-9 rounded-full border border-stone-300 bg-white px-3.5 text-sm font-medium text-stone-700 hover:bg-stone-100 aria-pressed:border-marca-600 aria-pressed:bg-marca-50 aria-pressed:text-marca-800"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                <ChipsServicios
+                  sugeridos={SERVICIOS_SUGERIDOS[tipo]}
+                  valor={datos.servicio}
+                  onElegir={(s) => setDatos((d) => ({ ...d, servicio: s }))}
+                />
               </Campo>
 
               <div className="grid grid-cols-2 gap-3">
