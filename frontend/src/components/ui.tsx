@@ -40,8 +40,15 @@ export function Spinner({ className = 'size-5' }: { className?: string }) {
 export function AvisoError({ mensaje }: { mensaje: string | null }) {
   if (!mensaje) return null
   return (
-    <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-      {mensaje}
+    <div role="alert" className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+      <svg className="mt-px size-5 shrink-0 text-red-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path
+          fillRule="evenodd"
+          d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+          clipRule="evenodd"
+        />
+      </svg>
+      <span>{mensaje}</span>
     </div>
   )
 }

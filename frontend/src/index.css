@@ -1,13 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-marca-50: #ecf7f6;
-  --color-marca-100: #cfecea;
-  --color-marca-200: #a0d8d4;
-  --color-marca-500: #14918b;
-  --color-marca-600: #0e6e6a;
-  --color-marca-700: #0b5754;
-  --color-marca-800: #094543;
+  /* Manrope para leer, Fraunces para los títulos: sobrio, con aire de barbería clásica */
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+
+  /* Cobre: el acento de la marca. El carbón sale de la escala stone (gris cálido) */
+  --color-marca-50: #faf5ef;
+  --color-marca-100: #f2e5d4;
+  --color-marca-200: #e3c8a7;
+  --color-marca-300: #d0a679;
+  --color-marca-500: #b07a46;
+  --color-marca-600: #9a6334;
+  --color-marca-700: #7d4f29;
+  --color-marca-800: #613d21;
 }
 
 @layer base {
@@ -16,6 +22,11 @@
   }
 
   body {
-    @apply bg-stone-50 text-stone-900 antialiased;
+    @apply bg-stone-50 font-sans text-stone-900 antialiased;
+  }
+
+  h1 {
+    @apply font-display font-semibold;
+    font-optical-sizing: auto;
   }
 }

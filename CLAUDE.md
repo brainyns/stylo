@@ -34,6 +34,8 @@ Spring Web, Spring Data JPA, PostgreSQL, Spring Security con JWT, Validation, Fl
 - Secretos (contraseña de BD, clave JWT) en variables de entorno, nunca en el código. Documentarlas en `.env.example`.
 - Conceptos del negocio en español (`Cliente`, `Salon`, `Servicio`, `Pago`). Textos neutros que sirvan a peluquerías y barberías ("cliente", "negocio"), no "clienta" ni "salón"; términos técnicos en inglés (`Controller`, `Repository`, `Service`).
 - Textos visibles al usuario en español de Colombia; montos en COP.
+- En pantalla el tipo `BARBERIA` se llama "Barber" (plural "barbers"), no "Barbería". El valor interno del enum no cambia.
+- Estilo visual: carbón (escala `stone`) y cobre (`marca-*` en `index.css`); títulos en Fraunces y texto en Manrope.
 
 ## Git
 

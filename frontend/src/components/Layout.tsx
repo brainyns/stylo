@@ -27,18 +27,26 @@ export function Layout() {
 
   return (
     <div className="min-h-dvh pb-40">
-      <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur">
+      <header className="sticky top-0 z-10 bg-stone-950 pt-[env(safe-area-inset-top)] text-white">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-          <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-wide text-marca-600">
-              Stylo{salon && ` · ${NOMBRE_TIPO_NEGOCIO[salon.tipo]}`}
-            </p>
-            <p className="truncate text-lg font-bold">{salon?.nombre ?? ' '}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-marca-300 font-display text-lg font-bold text-stone-950"
+              aria-hidden="true"
+            >
+              S
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-marca-300">
+                Stylo{salon && ` · ${NOMBRE_TIPO_NEGOCIO[salon.tipo]}`}
+              </p>
+              <p className="truncate text-lg font-bold">{salon?.nombre ?? ' '}</p>
+            </div>
           </div>
           <button
             type="button"
             onClick={cerrarSesion}
-            className="min-h-11 shrink-0 rounded-xl px-3 text-sm font-semibold text-stone-600 hover:bg-stone-100 active:bg-stone-200"
+            className="min-h-11 shrink-0 rounded-xl px-3 text-sm font-semibold text-stone-300 hover:bg-white/10 hover:text-white active:bg-white/15"
           >
             Cerrar sesión
           </button>

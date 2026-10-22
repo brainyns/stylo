@@ -7,10 +7,11 @@ export interface TokenResponse {
 
 export type TipoNegocio = 'PELUQUERIA' | 'BARBERIA' | 'MIXTO'
 
+// En pantalla la barbería se llama "Barber", como se dice en Colombia; el valor interno sigue siendo BARBERIA
 export const NOMBRE_TIPO_NEGOCIO: Record<TipoNegocio, string> = {
   PELUQUERIA: 'Peluquería',
-  BARBERIA: 'Barbería',
-  MIXTO: 'Peluquería y barbería',
+  BARBERIA: 'Barber',
+  MIXTO: 'Peluquería y barber',
 }
 
 export interface Salon {
