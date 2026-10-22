@@ -48,7 +48,7 @@ export default function Login() {
     setEnviando(true)
     try {
       guardarSesion(await iniciarSesion(email.trim(), password))
-      navigate('/agenda', { replace: true })
+      navigate('/inicio', { replace: true })
     } catch (err) {
       setEnviando(false)
       if (err instanceof ApiError && err.status === 401) {

@@ -22,7 +22,7 @@ public record CitaResponse(
         }
     }
 
-    static CitaResponse from(Cita cita) {
+    public static CitaResponse from(Cita cita) {
         return new CitaResponse(
                 cita.getId(),
                 ClienteDeCita.from(cita.getCliente()),

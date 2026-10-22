@@ -14,6 +14,11 @@
   --color-marca-600: #9a6334;
   --color-marca-700: #7d4f29;
   --color-marca-800: #613d21;
+
+  /* Series de las gráficas: el cobre de marca con más saturación y un azul frío de contraste.
+     Validados con el script de dataviz (croma, daltonismo y contraste sobre fondo claro) */
+  --color-serie-1: #c0682c;
+  --color-serie-2: #2f6fb0;
 }
 
 @layer base {

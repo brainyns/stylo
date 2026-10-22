@@ -7,5 +7,5 @@ export function RutaProtegida() {
 
 /** Para /login y /registro: si ya hay sesión, va directo a la agenda. */
 export function SoloSinSesion() {
-  return obtenerToken() ? <Navigate to="/agenda" replace /> : <Outlet />
+  return obtenerToken() ? <Navigate to="/inicio" replace /> : <Outlet />
 }

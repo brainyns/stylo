@@ -4,7 +4,17 @@ import { NOMBRE_TIPO_NEGOCIO, obtenerSalon, type Salon } from '../api/auth'
 import type { ContextoNegocio } from '../lib/negocio'
 import { borrarSesion } from '../lib/sesion'
 
-/** Encabezado con el negocio y barra inferior de pestañas (Agenda, Clientes, Por volver). */
+const SECCIONES = [
+  { to: '/inicio', etiqueta: 'Inicio', icono: <IconoInicio /> },
+  { to: '/agenda', etiqueta: 'Agenda', icono: <IconoCalendario /> },
+  { to: '/clientes', etiqueta: 'Clientes', icono: <IconoPersonas /> },
+  { to: '/por-volver', etiqueta: 'Por volver', icono: <IconoVolver /> },
+]
+
+/**
+ * En el celular: encabezado arriba y pestañas abajo. Desde lg: barra lateral carbón con el negocio,
+ * las secciones y cerrar sesión, y el contenido a la derecha.
+ */
 export function Layout() {
   const navigate = useNavigate()
   const [salon, setSalon] = useState<Salon | null>(null)
@@ -25,44 +35,73 @@ export function Layout() {
     navigate('/login', { replace: true })
   }
 
+  const negocio = (
+    <div className="flex min-w-0 items-center gap-3">
+      <span
+        className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-marca-300 font-display text-lg font-bold text-stone-950"
+        aria-hidden="true"
+      >
+        S
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wider text-marca-300">
+          Stylo{salon && ` · ${NOMBRE_TIPO_NEGOCIO[salon.tipo]}`}
+        </p>
+        <p className="truncate text-lg font-bold">{salon?.nombre ?? ' '}</p>
+      </div>
+    </div>
+  )
+
+  const botonSalir = (
+    <button
+      type="button"
+      onClick={cerrarSesion}
+      className="min-h-11 shrink-0 rounded-xl px-3 text-left text-sm font-semibold text-stone-300 hover:bg-white/10 hover:text-white active:bg-white/15"
+    >
+      Cerrar sesión
+    </button>
+  )
+
   return (
-    <div className="min-h-dvh pb-40">
-      <header className="sticky top-0 z-10 bg-stone-950 pt-[env(safe-area-inset-top)] text-white">
+    <div className="min-h-dvh pb-40 lg:pb-16 lg:pl-64">
+      <header className="sticky top-0 z-10 bg-stone-950 pt-[env(safe-area-inset-top)] text-white lg:hidden">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-marca-300 font-display text-lg font-bold text-stone-950"
-              aria-hidden="true"
-            >
-              S
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-marca-300">
-                Stylo{salon && ` · ${NOMBRE_TIPO_NEGOCIO[salon.tipo]}`}
-              </p>
-              <p className="truncate text-lg font-bold">{salon?.nombre ?? ' '}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={cerrarSesion}
-            className="min-h-11 shrink-0 rounded-xl px-3 text-sm font-semibold text-stone-300 hover:bg-white/10 hover:text-white active:bg-white/15"
-          >
-            Cerrar sesión
-          </button>
+          {negocio}
+          {botonSalir}
         </div>
       </header>
+
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col bg-stone-950 px-4 py-6 text-white lg:flex">
+        <div className="px-2">{negocio}</div>
+        <nav aria-label="Secciones" className="mt-10 flex-1 space-y-1">
+          {SECCIONES.map((s) => (
+            <NavLink
+              key={s.to}
+              to={s.to}
+              className={({ isActive }) =>
+                `flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition-colors ${
+                  isActive ? 'bg-white/10 text-marca-300' : 'text-stone-300 hover:bg-white/5 hover:text-white'
+                }`
+              }
+            >
+              {s.icono}
+              {s.etiqueta}
+            </NavLink>
+          ))}
+        </nav>
+        {botonSalir}
+      </aside>
 
       <Outlet context={{ salon } satisfies ContextoNegocio} />
 
       <nav
         aria-label="Secciones"
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-stone-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-stone-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
       >
-        <div className="mx-auto grid max-w-2xl grid-cols-3">
-          <Pestana to="/agenda" etiqueta="Agenda" icono={<IconoCalendario />} />
-          <Pestana to="/clientes" etiqueta="Clientes" icono={<IconoPersonas />} />
-          <Pestana to="/por-volver" etiqueta="Por volver" icono={<IconoVolver />} />
+        <div className="mx-auto grid max-w-2xl grid-cols-4">
+          {SECCIONES.map((s) => (
+            <Pestana key={s.to} {...s} />
+          ))}
         </div>
       </nav>
     </div>
@@ -104,10 +143,10 @@ export function EncabezadoVolver({ to, children }: { to: string; children: React
   )
 }
 
-/** Botón redondo fijo sobre la barra de pestañas, para la acción principal de la pantalla. */
+/** Botón redondo fijo sobre la barra de pestañas (abajo a la derecha en computador), para la acción principal. */
 export function EnlaceFlotante({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-20">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-20 lg:bottom-8 lg:left-64">
       <div className="mx-auto flex max-w-2xl justify-end px-4">
         <Link
           to={to}
@@ -133,6 +172,14 @@ const propsIcono = {
   strokeLinejoin: 'round',
   'aria-hidden': true,
 } as const
+
+function IconoInicio() {
+  return (
+    <svg {...propsIcono}>
+      <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />
+    </svg>
+  )
+}
 
 function IconoCalendario() {
   return (
