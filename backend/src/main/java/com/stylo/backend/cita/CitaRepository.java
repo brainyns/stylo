@@ -32,7 +32,10 @@ public interface CitaRepository extends Repository<Cita, UUID> {
             select new com.stylo.backend.cita.ResumenVisitas(c.cliente.id,
                 max(case when c.estado = com.stylo.backend.cita.EstadoCita.COMPLETADA then c.inicio end),
                 min(case when c.estado = com.stylo.backend.cita.EstadoCita.PROGRAMADA and c.inicio >= :ahora
-                    then c.inicio end))
+                    then c.inicio end),
+                count(case when c.estado = com.stylo.backend.cita.EstadoCita.COMPLETADA then 1 end),
+                coalesce(sum(case when c.estado = com.stylo.backend.cita.EstadoCita.COMPLETADA
+                    then c.precio end), 0L))
             from Cita c
             """;
 

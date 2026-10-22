@@ -3,6 +3,7 @@ import { Layout } from './components/Layout'
 import { RutaProtegida, SoloSinSesion } from './components/RutaProtegida'
 import Agenda from './pages/Agenda'
 import CitaForm from './pages/CitaForm'
+import ClienteFicha from './pages/ClienteFicha'
 import ClienteForm from './pages/ClienteForm'
 import Clientes from './pages/Clientes'
 import Login from './pages/Login'
@@ -25,7 +26,8 @@ export default function App() {
         <Route path="/agenda/nueva" element={<CitaForm />} />
         <Route path="/agenda/:id" element={<CitaForm />} />
         <Route path="/clientes/nuevo" element={<ClienteForm />} />
-        <Route path="/clientes/:id" element={<ClienteForm />} />
+        <Route path="/clientes/:id" element={<ClienteFicha />} />
+        <Route path="/clientes/:id/editar" element={<ClienteForm />} />
       </Route>
       <Route path="*" element={<Navigate to="/agenda" replace />} />
     </Routes>

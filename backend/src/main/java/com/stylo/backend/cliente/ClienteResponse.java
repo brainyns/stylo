@@ -19,12 +19,17 @@ public record ClienteResponse(
         Instant proximaCita,
         // Última visita + frecuencia; null si aún no ha venido
         Instant leTocaVolver,
+        // Citas completadas y suma de su precio en COP
+        long visitas,
+        long totalGastado,
         Instant creadoEn,
         Instant actualizadoEn) {
 
     static ClienteResponse from(Cliente cliente, ResumenVisitas resumen) {
         Instant ultimaVisita = resumen != null ? resumen.ultimaVisita() : null;
         Instant proximaCita = resumen != null ? resumen.proximaCita() : null;
+        long visitas = resumen != null ? resumen.visitas() : 0;
+        long totalGastado = resumen != null ? resumen.gastado() : 0;
         Instant leTocaVolver = ultimaVisita != null
                 ? ultimaVisita.plus(Duration.ofDays(7L * cliente.getFrecuenciaSemanas()))
                 : null;
@@ -40,6 +45,8 @@ public record ClienteResponse(
                 ultimaVisita,
                 proximaCita,
                 leTocaVolver,
+                visitas,
+                totalGastado,
                 cliente.getCreadoEn(),
                 cliente.getActualizadoEn());
     }

@@ -54,7 +54,14 @@ class CitaControllerTests {
                 .andExpect(jsonPath("$.ultimaVisita").value(haceUnaSemana.toString()))
                 .andExpect(jsonPath("$.proximaCita").value(manana.toString()))
                 // Frecuencia de 2 semanas
-                .andExpect(jsonPath("$.leTocaVolver").value(haceUnaSemana.plus(14, ChronoUnit.DAYS).toString()));
+                .andExpect(jsonPath("$.leTocaVolver").value(haceUnaSemana.plus(14, ChronoUnit.DAYS).toString()))
+                // Solo cuenta la cita atendida, no la programada para mañana
+                .andExpect(jsonPath("$.visitas").value(1))
+                .andExpect(jsonPath("$.totalGastado").value(35000));
+
+        mvc.perform(get("/api/clientes").header("Authorization", "Bearer " + token))
+                .andExpect(jsonPath("$[0].visitas").value(1))
+                .andExpect(jsonPath("$[0].totalGastado").value(35000));
 
         mvc.perform(get("/api/citas").header("Authorization", "Bearer " + token)
                         .param("desde", haceUnaSemana.minus(1, ChronoUnit.DAYS).toString())
@@ -69,7 +76,9 @@ class CitaControllerTests {
     void sinCitasNoHayFechaParaVolver() throws Exception {
         mvc.perform(get("/api/clientes/" + clienteId).header("Authorization", "Bearer " + token))
                 .andExpect(jsonPath("$.ultimaVisita").value(nullValue()))
-                .andExpect(jsonPath("$.leTocaVolver").value(nullValue()));
+                .andExpect(jsonPath("$.leTocaVolver").value(nullValue()))
+                .andExpect(jsonPath("$.visitas").value(0))
+                .andExpect(jsonPath("$.totalGastado").value(0));
     }
 
     @Test

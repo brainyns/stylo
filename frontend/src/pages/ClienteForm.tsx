@@ -2,28 +2,9 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
 import { obtenerSalon, type Salon } from '../api/auth'
-import { listarCitasDeCliente, type Cita } from '../api/citas'
-import {
-  actualizarCliente,
-  crearCliente,
-  eliminarCliente,
-  obtenerCliente,
-  type Cliente,
-  type ClienteRequest,
-} from '../api/clientes'
+import { actualizarCliente, crearCliente, eliminarCliente, obtenerCliente, type ClienteRequest } from '../api/clientes'
 import { EncabezadoVolver } from '../components/Layout'
-import {
-  AvatarCliente,
-  AvisoError,
-  Boton,
-  Campo,
-  EnlaceWhatsApp,
-  InsigniaEstado,
-  PantallaCargando,
-  claseInput,
-} from '../components/ui'
-import { describirCuandoVuelve, diasDesdeHoy, formatearFechaCorta, formatearHora, formatearPrecio } from '../lib/formato'
-import { enlaceWhatsApp, mensajeLeTocaVolver } from '../lib/whatsapp'
+import { AvatarCliente, AvisoError, Boton, Campo, PantallaCargando, claseInput } from '../components/ui'
 import { FRECUENCIAS_SEMANAS, TONOS, agruparTelefono, formatearTelefono, frecuenciaPorDefecto } from '../lib/tonos'
 
 interface Formulario {
@@ -61,8 +42,6 @@ export default function ClienteForm() {
 
   const [datos, setDatos] = useState<Formulario>(VACIO)
   const [salon, setSalon] = useState<Salon | null>(null)
-  const [cliente, setCliente] = useState<Cliente | null>(null)
-  const [citas, setCitas] = useState<Cita[]>([])
   const [cargando, setCargando] = useState(editando)
   const [errorCarga, setErrorCarga] = useState<string | null>(null)
   const [enviando, setEnviando] = useState<'volver' | 'otro' | null>(null)
@@ -83,12 +62,10 @@ export default function ClienteForm() {
         activo = false
       }
     }
-    Promise.all([obtenerCliente(id), listarCitasDeCliente(id), obtenerSalon()])
-      .then(([c, historial, s]) => {
+    Promise.all([obtenerCliente(id), obtenerSalon()])
+      .then(([c, s]) => {
         if (!activo) return
         setSalon(s)
-        setCliente(c)
-        setCitas(historial)
         setDatos({
           nombre: c.nombre,
           telefono: formatearTelefono(c.telefono),
@@ -153,7 +130,8 @@ export default function ClienteForm() {
         refNombre.current?.focus()
         return
       }
-      navigate('/clientes', { state: { aviso: editando ? 'Cambios guardados.' : `Se guardó a ${cuerpo.nombre}.` } })
+      if (id) navigate(`/clientes/${id}`, { replace: true, state: { aviso: 'Cambios guardados.' } })
+      else navigate('/clientes', { state: { aviso: `Se guardó a ${cuerpo.nombre}.` } })
     } catch (err) {
       setEnviando(null)
       setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado.')
@@ -191,10 +169,12 @@ export default function ClienteForm() {
   })
 
   const ocupado = enviando !== null || eliminando
+  // Al editar se vuelve a la ficha del cliente; al crear, a la lista
+  const volverA = id ? `/clientes/${id}` : '/clientes'
 
   return (
     <div className="min-h-dvh pb-10">
-      <EncabezadoVolver to="/clientes">Clientes</EncabezadoVolver>
+      <EncabezadoVolver to={volverA}>{editando ? 'Ficha del cliente' : 'Clientes'}</EncabezadoVolver>
 
       <main className="mx-auto max-w-2xl px-4 pt-6">
         <div className="mb-6 flex items-center gap-4">
@@ -205,8 +185,8 @@ export default function ClienteForm() {
         {errorCarga ? (
           <div className="space-y-3">
             <AvisoError mensaje={errorCarga} />
-            <Link to="/clientes" className="block py-3 text-center font-semibold text-marca-700">
-              Volver a la lista
+            <Link to={volverA} className="block py-3 text-center font-semibold text-marca-700">
+              Volver
             </Link>
           </div>
         ) : (
@@ -363,15 +343,13 @@ export default function ClienteForm() {
                   </Boton>
                 )}
                 <Link
-                  to="/clientes"
+                  to={volverA}
                   className="flex min-h-12 w-full items-center justify-center rounded-xl text-base font-semibold text-stone-600 hover:bg-stone-100"
                 >
                   Cancelar
                 </Link>
               </div>
             </form>
-
-            {cliente && <Visitas cliente={cliente} citas={citas} negocio={salon?.nombre ?? ''} />}
 
             {editando && (
               <section className="mt-8 border-t border-stone-200 pt-6">
@@ -401,72 +379,5 @@ export default function ClienteForm() {
         )}
       </main>
     </div>
-  )
-}
-
-/** Próxima cita, cuándo le toca volver e historial de citas del cliente. */
-function Visitas({ cliente, citas, negocio }: { cliente: Cliente; citas: Cita[]; negocio: string }) {
-  const atrasado = cliente.leTocaVolver !== null && diasDesdeHoy(cliente.leTocaVolver) < 0
-  return (
-    <section className="mt-8 border-t border-stone-200 pt-6">
-      <h2 className="text-lg font-bold tracking-tight">Visitas</h2>
-
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-stone-200 bg-white p-4">
-          <p className="text-xs text-stone-500">Próxima cita</p>
-          <p className="mt-0.5 font-semibold first-letter:uppercase">
-            {cliente.proximaCita
-              ? `${formatearFechaCorta(cliente.proximaCita)}, ${formatearHora(cliente.proximaCita)}`
-              : 'Sin agendar'}
-          </p>
-        </div>
-        <div
-          className={`rounded-2xl border p-4 ${atrasado ? 'border-amber-200 bg-amber-50' : 'border-stone-200 bg-white'}`}
-        >
-          <p className="text-xs text-stone-500">Le toca volver</p>
-          <p className={`mt-0.5 font-semibold first-letter:uppercase ${atrasado ? 'text-amber-800' : ''}`}>
-            {cliente.leTocaVolver
-              ? cliente.proximaCita
-                ? formatearFechaCorta(cliente.leTocaVolver)
-                : describirCuandoVuelve(cliente.leTocaVolver).replace(/^Le toca /, '')
-              : 'Sin visitas aún'}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-3 flex gap-2">
-        <EnlaceWhatsApp
-          href={enlaceWhatsApp(cliente.telefono, mensajeLeTocaVolver(cliente.nombre, negocio))}
-          className="flex-1 justify-center"
-        >
-          Escribirle
-        </EnlaceWhatsApp>
-        <Link
-          to={`/agenda/nueva?clienteId=${cliente.id}`}
-          className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl bg-marca-600 px-3.5 text-sm font-semibold text-white hover:bg-marca-700"
-        >
-          Agendar cita
-        </Link>
-      </div>
-
-      {citas.length > 0 && (
-        <ul className="mt-4 divide-y divide-stone-100 rounded-2xl border border-stone-200 bg-white">
-          {citas.slice(0, 10).map((cita) => (
-            <li key={cita.id}>
-              <Link to={`/agenda/${cita.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-stone-50">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{cita.servicio}</p>
-                  <p className="text-sm text-stone-500 first-letter:uppercase">
-                    {formatearFechaCorta(cita.inicio)}, {formatearHora(cita.inicio)}
-                    {cita.precio !== null && ` · ${formatearPrecio(cita.precio)}`}
-                  </p>
-                </div>
-                <InsigniaEstado estado={cita.estado} />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
   )
 }

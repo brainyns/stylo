@@ -15,6 +15,10 @@ export interface Cliente {
   proximaCita: string | null
   /** Última visita + frecuencia; null si aún no ha venido. */
   leTocaVolver: string | null
+  /** Citas atendidas. */
+  visitas: number
+  /** Suma del precio de las citas atendidas, en COP. */
+  totalGastado: number
   creadoEn: string
   actualizadoEn: string
 }
